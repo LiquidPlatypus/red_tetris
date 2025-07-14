@@ -16,7 +16,8 @@ io.on('connection', (socket) => {
     });
 });
 
+const HOST = '0.0.0.0';
 const PORT = 3000;
 server.listen(PORT, () => {
-    console.log(`Listening on http://localhost:${PORT}`);
+    console.log(`Listening on http://${HOST}:${PORT}`);
 });
