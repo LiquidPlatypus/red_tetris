@@ -11,6 +11,10 @@ app.use(express.static('static'));
 io.on('connection', (socket) => {
     console.log('Client join the game.');
 
+    socket.on('messages', (msg) => {
+        console.log(msg.value);
+    });
+
     socket.on('disconnect', () => {
         console.log('Client left the game.');
     });
