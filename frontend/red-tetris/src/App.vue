@@ -20,7 +20,7 @@ const show = ref(true)
 
 <style scoped>
 	main {
-		background-color: darkblue;
+		background-color: #8c8899;
 		width: 100vw;
 		height: 100vh;
 		display: flex;
@@ -31,7 +31,7 @@ const show = ref(true)
 
 	.title {
 		color: aliceblue;
-		font-family: Carlito, serif;
+		font-family: "Droid Sans", sans-serif;
 		position: absolute;
 		top: 50px;
 		left: 50%;
@@ -40,5 +40,11 @@ const show = ref(true)
 
 	.button {
 		border-radius: 0;
+		background-color: #777482;
+		width: 15vw;
+		height: 4vh;
+	}
+	.button:hover {
+		background-color: #bebcc4;
 	}
 </style>
