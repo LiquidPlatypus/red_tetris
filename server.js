@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
     let instance_player;
     socket.on('messages', (msg) => {
         console.log(`Name get: ${msg}`);
-        if (getPlayer(msg) === undefined)
+        if (getPlayer(msg) !== undefined)
             console.error("Name already exist");
         else {
             instance_player = Player(msg);
