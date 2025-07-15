@@ -15,7 +15,7 @@ socket.on('disconnect', () => {
 button.addEventListener('click', () => {
     const message = input.value.trim();
     if (message.length > 0) {
-        socket.emit('message', message);
+        socket.emit('messages', message);
         input.value = '';
     }
     else if (message.length === 0) {}
@@ -23,9 +23,3 @@ button.addEventListener('click', () => {
         console.error('message error');
     }
 });
-
-// input.addEventListener('keydown', (event) => {
-//   if (event.key === 'Enter') {
-//     button.click();
-//   }
-// });
