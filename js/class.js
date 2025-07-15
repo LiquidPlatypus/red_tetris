@@ -13,4 +13,7 @@ export function addPlayer(player) {
     return undefined;
 } export function removePlayer(player) {
     _.remove(players, n => n.username === player.username);
+} export function changeUserName(new_username, player) {
+    _.remove(players, n => n.username === player.username);
+    addPlayer(Player(new_username));
 }

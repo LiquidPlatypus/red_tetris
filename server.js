@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
 
-const { Player, addPlayer, getPlayer, removePlayer } = require('./js/class.js');
+const { Player, addPlayer, getPlayer, removePlayer, changeUserName } = require('./js/class.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -24,14 +24,19 @@ app.use(express.static('static'));
 
 io.on('connection', (socket) => {
     console.log('Client join the game.');
-    let instance_player;
-    socket.on('messages', (msg) => {
-        console.log(`Name get: ${msg}`);
-        if (getPlayer(msg) !== undefined)
-            console.error("Name already exist");
-        else {
-            instance_player = Player(msg);
-            addPlayer(instance_player);
+    let instance_player = Player('');
+    socket.on('name', (msg) => {
+        if (msg !== '') {
+            console.log('+++ NEW LOG');
+            console.log(`Name get: ${msg}`);
+            if (getPlayer(msg) !== undefined) {
+                console.error("Name already exist");
+            } else if (!instance_player) {
+                addPlayer(instance_player);
+            } else {
+                changeUserName(msg, instance_player);
+            }
+            console.log('---');
         }
     });
 

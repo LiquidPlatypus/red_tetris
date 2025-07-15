@@ -1,7 +1,7 @@
 const socket = io(); // va se connecter au même host:port
 
 const input = document.getElementById('msgInput');
-const button = document.getElementById('sendBtn');
+const buttonName = document.getElementById('sendName');
 
 socket.on('connect', () => {
     console.log('🤠​ Connected !');
@@ -12,10 +12,10 @@ socket.on('disconnect', () => {
 });
 
 
-button.addEventListener('click', () => {
+buttonName.addEventListener('click', () => {
     const message = input.value.trim();
     if (message.length > 0) {
-        socket.emit('messages', message);
+        socket.emit('name', message);
         input.value = '';
     }
     else if (message.length === 0) {}
