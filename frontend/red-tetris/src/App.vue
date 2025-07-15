@@ -1,13 +1,19 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+
+import {ref} from 'vue'
+
+const show = ref(true)
 </script>
 
 <template>
 	<main>
 		<div>
-			<p>Simplytis</p>
-			<button>Créer partie</button>
+			<h1 class="title" v-if="show">Simplytis</h1>
+		</div>
+		<div>
+			<button class="button" @click="show = !show">Créer partie</button>
 		</div>
 	</main>
 </template>
@@ -18,11 +24,21 @@ import HelloWorld from './components/HelloWorld.vue'
 		width: 100vw;
 		height: 100vh;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 	}
 
-	div {
-		text-align: center;
+	.title {
+		color: aliceblue;
+		font-family: Carlito, serif;
+		position: absolute;
+		top: 50px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.button {
+		border-radius: 0;
 	}
 </style>
