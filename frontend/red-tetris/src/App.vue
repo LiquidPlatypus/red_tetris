@@ -4,16 +4,27 @@ import HelloWorld from './components/HelloWorld.vue'
 
 import {ref} from 'vue'
 
-const show = ref(true)
+const pseudo = ref('')
+
+function creerPartie() {
+	console.log(pseudo.value);
+}
+
 </script>
 
 <template>
 	<main>
 		<div>
-			<h1 class="title" v-if="show">Simplytis</h1>
+			<h1 class="title">Simplytis</h1>
 		</div>
-		<div>
-			<button class="button" @click="show = !show">Créer partie</button>
+		<div class="player-input">
+			<input
+				id="msgInput"
+				v-model="pseudo"
+				class="pseudo-input"
+				type="text"
+				placeholder="Pseudo">
+			<button id="sendBtn" class="button" type="button" @click="creerPartie">Créer partie</button>
 		</div>
 	</main>
 </template>
@@ -36,13 +47,23 @@ const show = ref(true)
 		top: 50px;
 		left: 50%;
 		transform: translateX(-50%);
+		font-size: 3rem;
+	}
+
+	.player-input {
+		display: grid;
+		gap: 1vh;
+	}
+
+	.pseudo-input {
+		height: 4vh;
 	}
 
 	.button {
 		border-radius: 0;
 		background-color: #777482;
-		width: 15vw;
 		height: 4vh;
+		cursor: pointer;
 	}
 	.button:hover {
 		background-color: #bebcc4;
