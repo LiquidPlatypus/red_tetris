@@ -7,20 +7,15 @@ const router = useRouter();
 
 const pseudo = ref('');
 
-function creerPartie() {
-	console.log(pseudo.value);
+function createLobby() {
 	if (pseudo.value.trim() === '') return;
 	router.push('/lobby');
-
 }
 
 </script>
 
 <template>
 	<main class="home">
-		<div>
-			<h1 class="title">SIMPLYTIS</h1>
-		</div>
 		<div class="player-input">
 			<input
 				id="msgInput"
@@ -28,7 +23,7 @@ function creerPartie() {
 				class="pseudo-input"
 				type="text"
 				placeholder="Pseudo">
-			<ApppButton @click="creerPartie">CREATE GAME</ApppButton>
+			<ApppButton @click="createLobby">CREATE GAME</ApppButton>
 		</div>
 
 		<RouterView />
