@@ -6,3 +6,13 @@
 	font-weight: normal;
 	font-style: normal;
 }
+
+.title {
+	color: aliceblue;
+	font-family: 'ModernTetris', sans-serif;
+	position: absolute;
+	top: 50px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 3rem;
+}
