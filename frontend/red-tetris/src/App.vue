@@ -15,7 +15,7 @@ function creerPartie() {
 <template>
 	<main>
 		<div>
-			<h1 class="title">Simplytis</h1>
+			<h1 class="title">SIMPLYTIS</h1>
 		</div>
 		<div class="player-input">
 			<input
@@ -24,7 +24,10 @@ function creerPartie() {
 				class="pseudo-input"
 				type="text"
 				placeholder="Pseudo">
-			<button id="sendBtn" class="button" type="button" @click="creerPartie">Créer partie</button>
+			<button id="sendBtn" class="button" type="button" @click="creerPartie">CREATE GAME</button>
+			<button id="createList">createList</button>
+			<button id="getCurrentPiece">getCurrentPiece</button>
+			<button id="getNextPiece">getNextPiece</button>
 		</div>
 	</main>
 </template>
@@ -42,7 +45,7 @@ function creerPartie() {
 
 	.title {
 		color: aliceblue;
-		font-family: "Droid Sans", sans-serif;
+		font-family: 'ModernTetris', sans-serif;
 		position: absolute;
 		top: 50px;
 		left: 50%;
@@ -55,7 +58,17 @@ function creerPartie() {
 		gap: 1vh;
 	}
 
+	input::placeholder {
+		font-family: 'ModernTetris', sans-serif;
+		font-size: 0.8rem;
+		color: darkgrey;
+	}
+
 	.pseudo-input {
+		border-left: #5454541a solid 3px;
+		border-top: #5454541a solid 3px;
+		border-right: #5454547a solid 3px;
+		border-bottom: #5454547a solid 3px;
 		height: 4vh;
 	}
 
@@ -64,6 +77,7 @@ function creerPartie() {
 		background-color: #777482;
 		height: 4vh;
 		cursor: pointer;
+		font-family: 'ModernTetris', sans-serif;
 	}
 	.button:hover {
 		background-color: #bebcc4;
