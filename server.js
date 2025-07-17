@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
 
-const { Player, addPlayer, getPlayer, removePlayer, changeUserName } = require('./js/class.js');
+const { Player, Game, changePlayer } = require('./js/class.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -22,27 +22,32 @@ const io = new Server(server);
 
 app.use(express.static('static'));
 
+let _games = [];
+
 io.on('connection', (socket) => {
     console.log('Client join the game.');
-    let instance_player = Player('');
+    let instance_player = Player('', false, false);
     socket.on('name', (msg) => {
         if (msg !== '') {
-            console.log('+++ NEW LOG');
-            console.log(`Name get: ${msg}`);
-            if (getPlayer(msg) !== undefined) {
-                console.error("Name already exist");
-            } else if (!instance_player) {
-                addPlayer(instance_player);
-            } else {
-                changeUserName(msg, instance_player);
-            }
+            console.log(`+++ ${instance_player.getUsername()}`);
+            instance_player = changePlayer(msg, true, true);
             console.log('---');
         }
+    });
+    
+    socket.on('gameInfo', () => {
+        console.log(`Send player info to ${instance_player.getUsername()}`);
+        const objPlayer = {
+            username: instance_player.getUsername(),
+            host: instance_player.getHost(),
+            status: instance_player.getStatus()
+        };
+        socket.emit('messageFromServer', objPlayer);
     });
 
     socket.on('disconnect', () => {
         console.log('Client left the game.');
-        removePlayer(instance_player);
+        instance_player = null;
     });
 });
 

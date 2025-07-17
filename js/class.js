@@ -1,19 +1,30 @@
 import _ from 'lodash';
-const players = [];
 
-export const Player = (username) => ({username});
-
-export function addPlayer(player) {
-    players.push(player);
-} export function getPlayer(username) {
-    for (let i = 0; i < players.length; i++) {
-        if (players[i].username === username)
-            return players;
+export const Player = (username, host, status) => {
+    return {
+        getUsername: () => username,
+        getHost: () => host,
+        getStatus: () => status,
     }
-    return undefined;
-} export function removePlayer(player) {
-    _.remove(players, n => n.username === player.username);
-} export function changeUserName(new_username, player) {
-    _.remove(players, n => n.username === player.username);
-    addPlayer(Player(new_username));
-}
+};
+
+export const changePlayer = (username, isHost, status) => {
+    return Player(username, isHost, status);
+};
+
+export const Game = () => {
+    let players = [];
+    let seed;
+
+    return {
+        addPlayer: (player) => {
+            players.push(player);
+        },
+        getPlayer: (username) => {
+            players.find(p => p.username !== username)
+        },
+        removePlayer: (player) => {
+            players = players.filter(p => p.username !== player.username);
+        }
+    }
+};
