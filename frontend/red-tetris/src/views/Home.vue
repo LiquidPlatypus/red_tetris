@@ -36,16 +36,6 @@ function creerPartie() {
 </template>
 
 <style scoped>
-main {
-	background-color: #8c8899;
-	width: 100vw;
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-}
-
 .player-input {
 	display: grid;
 	gap: 1vh;
