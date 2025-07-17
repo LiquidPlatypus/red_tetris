@@ -3,6 +3,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
 
+const { Player, addPlayer, getPlayer, removePlayer } = require('./js/class.js');
+
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
@@ -22,13 +24,20 @@ app.use(express.static('static'));
 
 io.on('connection', (socket) => {
     console.log('Client join the game.');
-
+    let instance_player;
     socket.on('messages', (msg) => {
-        console.log(msg);
+        console.log(`Name get: ${msg}`);
+        if (getPlayer(msg) !== undefined)
+            console.error("Name already exist");
+        else {
+            instance_player = Player(msg);
+            addPlayer(instance_player);
+        }
     });
 
     socket.on('disconnect', () => {
         console.log('Client left the game.');
+        removePlayer(instance_player);
     });
 });
 
