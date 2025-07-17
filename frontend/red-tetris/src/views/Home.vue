@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from "vue-router";
+import ApppButton from "@/components/ApppButton.vue";
 
 const router = useRouter();
 
@@ -27,7 +28,7 @@ function creerPartie() {
 				class="pseudo-input"
 				type="text"
 				placeholder="Pseudo">
-			<button id="sendBtn" class="button" type="button" @click="creerPartie">CREATE GAME</button>
+			<ApppButton @click="creerPartie">CREATE GAME</ApppButton>
 		</div>
 
 		<RouterView />
@@ -62,16 +63,5 @@ input::placeholder {
 	border-right: #5454547a solid 3px;
 	border-bottom: #5454547a solid 3px;
 	height: 4vh;
-}
-
-.button {
-	border-radius: 0;
-	background-color: #777482;
-	height: 4vh;
-	cursor: pointer;
-	font-family: 'ModernTetris', sans-serif;
-}
-.button:hover {
-	background-color: #bebcc4;
 }
 </style>
