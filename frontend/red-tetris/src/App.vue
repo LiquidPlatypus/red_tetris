@@ -1,14 +1,16 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import {RouterView} from 'vue-router'
 
 </script>
 
 <template>
 	<div id="app">
-		<div>
-			<h1 class="title">SIMPLYTIS</h1>
-		</div>
 		<p><strong>Current route :</strong> {{ $route.fullPath }}</p>
+		<div>
+			<router-link to="/" class="no-underline">
+				<h1 class="title cursor-pointer">SIMPLYTIS</h1>
+			</router-link>
+		</div>
 		<router-view />
 	</div>
 </template>
