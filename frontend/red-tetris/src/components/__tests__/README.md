@@ -2,6 +2,7 @@
 
 Trucs important à retenir pour les tests.
 
+---
 ## Lancer les test
 
 ```bash
@@ -13,7 +14,7 @@ Trucs important à retenir pour les tests.
 ```bash
   npm run coverage
 ```
-
+---
 ### wrapper : Représente votre composant monté, avec plein de méthodes utiles :
 
 ```.find() :``` Trouve un élément<br />
