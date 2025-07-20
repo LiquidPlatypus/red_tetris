@@ -1,6 +1,4 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
 	<main class="game">
@@ -12,6 +10,4 @@
 	</main>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

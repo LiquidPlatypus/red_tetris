@@ -1,17 +1,16 @@
 <script setup>
-import {ref} from 'vue'
-import {useRouter} from "vue-router";
-import AppButton from "@/components/AppButton.vue";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import AppButton from '@/components/AppButton.vue'
 
-const router = useRouter();
+const router = useRouter()
 
-const pseudo = ref('');
+const pseudo = ref('')
 
 function createLobby() {
-	if (pseudo.value.trim() === '') return;
-	router.push('/lobby');
+	if (pseudo.value.trim() === '') return
+	router.push('/lobby')
 }
-
 </script>
 
 <template>
@@ -22,7 +21,8 @@ function createLobby() {
 				v-model="pseudo"
 				class="pseudo-input"
 				type="text"
-				placeholder="Pseudo">
+				placeholder="Pseudo"
+			/>
 			<AppButton @click="createLobby">CREATE GAME</AppButton>
 		</div>
 
