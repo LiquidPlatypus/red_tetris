@@ -2,7 +2,7 @@
 
 import {ref} from 'vue';
 import {useRouter} from "vue-router";
-import ApppButton from "@/components/ApppButton.vue";
+import AppButton from "@/components/AppButton.vue";
 
 const router = useRouter();
 
@@ -15,8 +15,8 @@ function createGame() {
 <template>
 	<main class="lobby">
 		<div class="gameChoice">
-			<ApppButton @click="createGame">LAUNCH GAME</ApppButton>
-			<ApppButton>COPY LINK</ApppButton>
+			<AppButton @click="createGame">LAUNCH GAME</AppButton>
+			<AppButton>COPY LINK</AppButton>
 		</div>
 	</main>
 </template>

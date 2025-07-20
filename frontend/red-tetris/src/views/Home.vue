@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from "vue-router";
-import ApppButton from "@/components/ApppButton.vue";
+import AppButton from "@/components/AppButton.vue";
 
 const router = useRouter();
 
@@ -23,7 +23,7 @@ function createLobby() {
 				class="pseudo-input"
 				type="text"
 				placeholder="Pseudo">
-			<ApppButton @click="createLobby">CREATE GAME</ApppButton>
+			<AppButton @click="createLobby">CREATE GAME</AppButton>
 		</div>
 
 		<RouterView />
