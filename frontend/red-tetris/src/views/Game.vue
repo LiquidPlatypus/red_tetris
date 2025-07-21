@@ -97,7 +97,7 @@ onUnmounted(() => {
 				<h3>NEXT PIECE </h3>
 				<table class="next-piece-table">
 					<tr v-for="(row, rowIndex) in nextPiecePreview" :key="rowIndex">
-						<td v-for="(cell, colIndex) in row" :key="colindex" :class="cell">
+						<td v-for="(cell, colIndex) in row" :key="colIndex" :class="cell">
 
 						</td>
 					</tr>
