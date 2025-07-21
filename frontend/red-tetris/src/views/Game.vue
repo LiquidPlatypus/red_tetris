@@ -106,6 +106,7 @@ onUnmounted(() => {
 			<div id="game-zone">
 				<table class="game-zone-table">
 					<tr v-for="(row, rowIndex) in gameGrid" :key="rowIndex">
+						<p>DEBUG</p>
 						<td v-for="(cell, colIndex) in row" :key="colIndex" :class="cell">
 
 						</td>
@@ -142,34 +143,42 @@ main {
 	background-color: #214132;
 	padding: 15px;
 	display: grid;
-	grid-template-columns: 1fr 0.5fr;
-	grid-template-rows: 1fr 1fr 1fr 1fr;
-	gap: 0px 0px;
-	grid-template-areas:
-		"GAME SCORE"
-		"GAME SCORE NUMBER"
-		"GAME LINES"
-		"GAME NEXT PIECE";
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 }
 
 #score {
 	grid-column: 1;
 	grid-row: 1;
+	grid-column-start: 3;
+	grid-column-end: 4;
+	grid-row-start: 1;
+	grid-row-end: 2;
 }
 
 #lines {
 	grid-column: 1;
 	grid-row: 1;
+	grid-column-start: 3;
+	grid-column-end: 4;
+	grid-row-start: 3;
+	grid-row-end: 4;
 }
 
 #next-piece {
 	grid-column: 3;
 	grid-row: 1 / 3;
+	grid-column-start: 3;
+	grid-column-end: 4;
+	grid-row-start: 4;
+	grid-row-end: 5;
 }
 
 #game-zone {
-	grid-column: 2;
-	grid-row: 1 / 4;
+	grid-column-start: 1;
+	grid-column-end: 3;
+	grid-row-start: 1;
+	grid-row-end: 6;
 }
 
 .controls {
@@ -197,6 +206,10 @@ h3 {
 	border: 2px solid #416a26;
 	background-color: #88ac28;
 	padding: 10px;
+	grid-column-start: 3;
+	grid-column-end: 4;
+	grid-row-start: 1;
+	grid-row-end: 6;
 }
 
 .game-zone-table {
@@ -212,7 +225,6 @@ h3 {
 	box-sizing: border-box;
 }
 
-.empty { background-color: #214132; }
 .block-I { background-color: cyan; }
 .block-J { background-color: blue; }
 .block-L { background-color: orange; }
