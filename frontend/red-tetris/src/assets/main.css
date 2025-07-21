@@ -7,6 +7,13 @@
 	font-style: normal;
 }
 
+@font-face {
+	font-family: 'Pixel';
+	src: url('./fonts/smallest_pixel-7.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
 main {
 	background-color: #8c8899;
 	width: 100vw;
