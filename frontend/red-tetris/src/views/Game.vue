@@ -87,10 +87,9 @@ onUnmounted(() => {
 <template>
 	<main class="game">
 		<div id="game-container">
-			<div id="game-zone" class="tetris-grid"></div>
+			<div id="game-zone" class="tetris-grid">...</div>
 
 			<div class="sidebar">
-				<div class="infos pixel-corners" id="score">SCORE</div>
 				<div class="infos pixel-corners" id="lines">LINES</div>
 				<div class="infos pixel-corners" id="next-piece">next piece</div>
 			</div>
