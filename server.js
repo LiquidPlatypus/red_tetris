@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
+const path = require('path');
 
 const { Player, Game, changePlayer, getGame, removeGame, addGame, newHost } = require('./js/class.js');
 
@@ -22,6 +23,13 @@ const io = new Server(server);
 
 app.use(express.static('static'));
 
+app.get('/:room', (req, res) => {
+    res.sendFile(path.join(__dirname, 'static/index.html'));
+});
+app.get('/:room/:username', (req, res) => {
+    res.sendFile(path.join(__dirname, 'static/index.html'));
+});
+
 io.on('connection', (socket) => {
     console.log('Client join the game.');
     let instance_player = Player('', false, false);
@@ -32,18 +40,28 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('game-connect', (seed) => {
+    socket.on('game-create', (seed) => {
         if (instance_player.getUsername() !== '') {
             console.log(`${instance_player.getUsername()} connected to the game !`);
-            instance_player = changePlayer(instance_player.getUsername(), false, true);
-            instance_game = getGame(seed);
-            if (!instance_game) {
-                instance_player = changePlayer(instance_player.getUsername(), true, true);
-                instance_game = Game(seed);
-                addGame(instance_game);
-            }
+            instance_player = changePlayer(instance_player.getUsername(), true, true);
+            instance_game = Game(seed);
+            addGame(instance_game);
             instance_game.addPlayer(instance_player);
+            socket.emit('gameCreate', seed);
         }
+    });
+
+    socket.on('game-connect', (seed, username) => {
+        instance_player = changePlayer(username, false, true);
+        console.log(`${instance_player.getUsername()} connected to the game !`);
+        instance_game = getGame(seed);
+        if (!instance_game) {
+            instance_player = changePlayer(instance_player.getUsername(), true, true);
+            instance_game = Game(seed);
+            addGame(instance_game);
+        }
+        instance_game.addPlayer(instance_player);
+        socket.emit('gameCreate', seed);
     });
 
     socket.on('gameInfo', () => {
@@ -52,7 +70,8 @@ io.on('connection', (socket) => {
             username: instance_player.getUsername(),
             status: instance_player.getStatus(),
             host: instance_player.getHost(),
-            seed: instance_game.getSeed()
+            seed: instance_game.getSeed(),
+            count: instance_game.getPlayerList().length
         };
         socket.emit('messageFromServer', objPlayer);
     });
