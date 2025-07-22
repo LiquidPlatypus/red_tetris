@@ -87,31 +87,12 @@ onUnmounted(() => {
 <template>
 	<main class="game">
 		<div id="game-container">
-			<div id="score" class="infos">
-				<h3>SCORE {{ score }}</h3>
-			</div>
-			<div id="lines" class="infos">
-				<h3>LINES {{ lines }}</h3>
-			</div>
-			<div id="next-piece" class="infos">
-				<h3>NEXT PIECE </h3>
-				<table class="next-piece-table">
-					<tr v-for="(row, rowIndex) in nextPiecePreview" :key="rowIndex">
-						<td v-for="(cell, colIndex) in row" :key="colIndex" :class="cell">
+			<div id="game-zone" class="tetris-grid"></div>
 
-						</td>
-					</tr>
-				</table>
-			</div>
-			<div id="game-zone">
-				<table class="game-zone-table">
-					<tr v-for="(row, rowIndex) in gameGrid" :key="rowIndex">
-						<p>DEBUG</p>
-						<td v-for="(cell, colIndex) in row" :key="colIndex" :class="cell">
-
-						</td>
-					</tr>
-				</table>
+			<div class="sidebar">
+				<div class="infos pixel-corners" id="score">SCORE</div>
+				<div class="infos pixel-corners" id="lines">LINES</div>
+				<div class="infos pixel-corners" id="next-piece">next piece</div>
 			</div>
 		</div>
 
@@ -141,44 +122,65 @@ main {
 
 #game-container {
 	background-color: #214132;
-	padding: 15px;
+	border-top: 15px solid #3365ff;
+	border-left: 5px solid lightgrey;
+	border-right: 5px solid lightgrey;
+	border-bottom: 10px solid lightgrey;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 0.5rem;
+	position: relative;
+	box-shadow: 2px 2px black;
+}
+
+#game-container::before {
+	content: "";
+	position: absolute;
+	top: -15px; /* pour aligner avec le border-top */
+	left: -4.5px; /* dépassement à gauche */
+	width: calc(100% + 9px); /* dépassement à droite aussi */
+	height: 15px; /* même hauteur que ton border-top */
+	background-color: blue; /* même couleur que ton border-top */
+	border-top: 3px solid lightgrey;
+	border-bottom: 2px solid lightgrey;
+	border-left: 3px solid lightgrey;
+	border-right: 3px solid lightgrey;
+	box-sizing: border-box;
+}
+
+.tetris-grid {
+	background-color: #88ac28;
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+	grid-template-columns: repeat(10, 20px);
+	grid-template-rows: repeat(20, 20px);
+	border-top: 2px solid black;
+	border-left: 2px solid black;
 }
 
-#score {
-	grid-column: 1;
-	grid-row: 1;
-	grid-column-start: 3;
-	grid-column-end: 4;
-	grid-row-start: 1;
-	grid-row-end: 2;
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin-top: 0.5rem;
+	margin-right: 1rem;
 }
 
-#lines {
-	grid-column: 1;
-	grid-row: 1;
-	grid-column-start: 3;
-	grid-column-end: 4;
-	grid-row-start: 3;
-	grid-row-end: 4;
+.infos {
+	background-color: #88ac28;
+	padding: 10px;
+	border-right: 2px solid black;
+	border-bottom: 2px solid black;
 }
 
 #next-piece {
-	grid-column: 3;
-	grid-row: 1 / 3;
-	grid-column-start: 3;
-	grid-column-end: 4;
-	grid-row-start: 4;
-	grid-row-end: 5;
-}
-
-#game-zone {
-	grid-column-start: 1;
-	grid-column-end: 3;
-	grid-row-start: 1;
-	grid-row-end: 6;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: #88ac28;
 }
 
 .controls {
@@ -200,29 +202,6 @@ h3 {
 	font-size: 150%;
 	margin: 5px;
 	text-align: center;
-}
-
-.infos {
-	border: 2px solid #416a26;
-	background-color: #88ac28;
-	padding: 10px;
-	grid-column-start: 3;
-	grid-column-end: 4;
-	grid-row-start: 1;
-	grid-row-end: 6;
-}
-
-.game-zone-table {
-	background-color: #88ac28;
-	border-collapse: collapse;
-	border: 2px solid #416a26;
-}
-
-.game-zone-table td, .next-piece-table td {
-	width: 20px;
-	height: 20px;
-	border: 1px solid #688a26;
-	box-sizing: border-box;
 }
 
 .block-I { background-color: cyan; }
