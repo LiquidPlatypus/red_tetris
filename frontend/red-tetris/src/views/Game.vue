@@ -48,6 +48,124 @@ function initGrid() {
 	}
 }
 
+function getNextPiece() {
+	return (TETROMINOS[Math.floor(Math.random() * TETROMINOS.length)]);
+}
+
+function generateNextPiecePreview() {
+	if (!nextPiecePreview.value)
+		return;
+
+	const shape = nextPiece.value.shape;
+	nextPiecePreview.value = shape.map(row =>
+		row.map(cell => cell ? nextPiece.value.color : 'empty')
+	);
+}
+
+function rotateMatrix(matrix) {
+	const rows = matrix.length;
+	const cols = matrix[0].length;
+	const rotated = [];
+
+	for (let i = 0; i < cols; i++) {
+		rotated[i] = [];
+		for (let j = 0; j < rows; j++) {
+			rotated[i][j] = matrix[rows - 1 - j][i];
+		}
+	}
+
+	return rotated;
+}
+
+function isValidPosition(piece, rotation, x, y) {
+	let shape = piece.shape;
+	for (let i = 0; i < rotation; i++) {
+		shape = rotateMatrix(shape);
+	}
+
+	for (let row = 0; row < shape.length; row++) {
+		for (let col = 0; col < shape[row].length; col++) {
+			if (shape[row][col]) {
+				const newX = x + col;
+				const newY = y + row;
+
+				// Vérifier les limites
+				if (newX < 0 || newX >= COLS || newY >= ROWS)
+					return false;
+
+				// Vérifier les collisions avec les blocs existants
+				if (newY >= 0 && gameGrid.value[newY][newX] !== 'empty')
+					return false;
+			}
+		}
+	}
+	return true;
+}
+
+function placePiece() {
+	if (!currentPiece.value)
+		return ;
+
+	let shape = currentPiece.value.shape;
+	for (let i = 0; i < currentRotation.value; i++)
+		shape = rotateMatrix(shape);
+
+	for (let row = 0; row < shape.length; row++) {
+		for (let col = 0; col < shape[row].length; col++) {
+			if (shape[row][col]) {
+				const x = currentX.value + col;
+				const y = currentY.value + row;
+				if (y >= 0)
+					gameGrid.value[y][x] = currentPiece.value.color;
+			}
+		}
+	}
+}
+
+function drawCurrentPiece() {
+	for (let row = 0; row < ROWS; row++) {
+		for (let col = 0; col < COLS; col++) {
+			if (gameGrid.value[row][col].startsWith('temp-'))
+				gameGrid.value[row][col] = 'empty';
+		}
+	}
+
+	if (currentPiece.value) {
+		let shape = currentPiece.value.shape;
+		for (let i = 0; i < currentRotation.value; i++)
+			shape = rotateMatrix(shape);
+
+		for (let row = 0; row < shape.length; row++) {
+			for (let col = 0; col < shape[row].length; col++) {
+				if (shape[row][col]) {
+					const x = currentX.value + col;
+					const y = currentY.value + row;
+					if (x >= 0 && x < COLS && y >= 0 && y < ROWS && gameGrid.value[y][x] === 'empty')
+						gameGrid.value[y][x] = 'temp-' + currentPiece.value.color;
+				}
+			}
+		}
+	}
+}
+
+function clearLines() {
+	let linesCleared = 0;
+
+	for (let row = ROWS - 1; row >= 0; row--) {
+		let isLineFull = true;
+		for (let col = 0; col < COLS; col++) {
+			if (gameGrid.value[row][col] === 'empty' || gameGrid.value[row][col].startsWith('temp-')) {
+				isLineFull = false;
+				break;
+			}
+		}
+
+		if (isLineFull) {
+			
+		}
+	}
+}
+
 function startGame() {
 	initGrid();
 	score.value = 0;
