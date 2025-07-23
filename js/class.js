@@ -1,17 +1,18 @@
 import _ from 'lodash';
 
-let games = [];
+const games = new Map();
 
-export const Player = (username, host, status) => {
+export const Player = (username, host, status, id) => {
     return {
         getUsername: () => username,
         getHost: () => host,
         getStatus: () => status,
+        getId: () => id,
     }
 };
 
-export const changePlayer = (username, host, status) => {
-    return Player(username, host, status);
+export const changePlayer = (username, host, status, id) => {
+    return Player(username, host, status, id);
 };
 
 export const Game = (seed) => {
@@ -34,11 +35,11 @@ export const Game = (seed) => {
 
 export const addGame = (game) => {
     console.log(`${game.getSeed()}: game added`);
-    games.push(game);
+    games.set(game.getSeed(), game);
 };
 export const removeGame = (game) => {
     console.log(`${game.getSeed()}: game removed`);
-    games = games.filter(g => g.getSeed() !== game.getSeed());
+    games.delete(game.getSeed());
 }
 
 export const newHost = (player_list, game) => {
@@ -49,9 +50,5 @@ export const newHost = (player_list, game) => {
 };
 
 export const getGame = (seed) => {
-    let instance = games.find(g => g.getSeed() === seed);
-    if (instance)
-        return instance;
-    else
-        return undefined;
+    return games.get(seed);
 };

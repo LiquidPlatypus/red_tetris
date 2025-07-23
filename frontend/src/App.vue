@@ -1,5 +1,15 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterView } from 'vue-router';
+import socket from './socket';
+
+socket.on('connect', () => {
+    console.log('🤠​ Connected !');
+});
+
+socket.on('disconnect', () => {
+    console.log('😵​ Disconnected.');
+});
+
 </script>
 
 <template>
