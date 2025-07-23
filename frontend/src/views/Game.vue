@@ -63,6 +63,24 @@ function movePiece(dx, dy) {
 	return false;
 }
 
+function lockPiece() {
+	const { shape, x, y } = activePiece.value;
+
+	shape.forEach((row, dy) => {
+		row.forEach((value, dx) => {
+			grid.value[y][x] = value;
+		});
+	});
+
+	for (let i = 0; i < ROWS; i++) {
+		let row = ROWS[i];
+		if (row.every(cell => cell !== "empty")) {
+			grid.value.splice(i, 1);
+			grid.value.unshift([...Array(COLS).fill("empty")]);
+		}
+	}
+}
+
 function tick() {
 	if (!movePiece(0, 1))
 		lockPiece();
