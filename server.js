@@ -2,8 +2,9 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
+const path = require('path');
 
-const { Player, addPlayer, getPlayer, removePlayer } = require('./js/class.js');
+const { Player, Game, changePlayer, getGame, removeGame, addGame, newHost } = require('./js/class.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -20,24 +21,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static('static'));
+app.use(express.static('frontend/dist'));
 
 io.on('connection', (socket) => {
     console.log('Client join the game.');
-    let instance_player;
-    socket.on('messages', (msg) => {
-        console.log(`Name get: ${msg}`);
-        if (getPlayer(msg) !== undefined)
-            console.error("Name already exist");
-        else {
-            instance_player = Player(msg);
-            addPlayer(instance_player);
-        }
-    });
+    socket.emit('messageFromServer', 'Hello World !');
 
     socket.on('disconnect', () => {
         console.log('Client left the game.');
-        removePlayer(instance_player);
     });
 });
 
@@ -45,6 +36,6 @@ const HOSTURL = getLocalIP();
 const HOST = '0.0.0.0';
 const PORT = 3000;
 server.listen(PORT, () => {
-    console.log(`Listening on ${HOST}:${PORT}`);
+    console.log(`LOG : Listening on ${PORT}`);
     console.log(`URL : http://${HOSTURL}:${PORT}`);
 });

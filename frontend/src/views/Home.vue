@@ -2,6 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppButton from '@/components/AppButton.vue'
+import socket from '@/socket.js'
+
+socket.on('messageFromServer', (message) => {
+	console.log(message);
+});
 
 const router = useRouter()
 
@@ -11,6 +16,7 @@ function createLobby() {
 	if (pseudo.value.trim() === '') return
 	router.push('/lobby')
 }
+
 </script>
 
 <template>
