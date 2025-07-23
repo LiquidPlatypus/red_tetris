@@ -44,10 +44,35 @@ function renderPiece() {
 	grid.value = newGrid;
 }
 
+function canMoveTo(x, y, shape) {
+	if (y < ROWS - 1)
+		return true;
+	return false;
+}
+
+function movePiece(dx, dy) {
+	const newX = activePiece.value.x + dx;
+	const newY = activePiece.value.y + dy;
+	const shape = activePiece.value.shape;
+
+	if (canMoveTo(newX, newY, shape)) {
+		activePiece.value.x = newX;
+		activePiece.value.y = newY;
+		return true;
+	}
+	return false;
+}
+
+function tick() {
+	if (!movePiece(0, 1))
+		lockPiece();
+	renderPiece();
+}
+
 function handleKeyPress(e) {
-	if (e.key === "ArrowLeft") activePiece.value.x--;
-	if (e.key === "ArrowRight") activePiece.value.x++;
-	if (e.key === "ArrowDown") activePiece.value.y++;
+	if (e.key === "ArrowLeft") movePiece(-1, 0);
+	else if (e.key === "ArrowRight") movePiece(1, 0);
+	else if (e.key === "ArrowDown") movePiece(0, 1);
 	renderPiece();
 }
 
@@ -59,8 +84,7 @@ function startGame() {
 
 	// Faire descendre la pièce automatiquement
 	intervalId.value = setInterval(() => {
-		activePiece.value.y += 1;
-		renderPiece();
+		tick();
 	}, 500);
 
 	renderPiece();
