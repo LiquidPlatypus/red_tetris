@@ -4,6 +4,11 @@ import { ref, computed, onMounted } from 'vue';
 const ROWS = 20;
 const COLS = 10;
 
+const isGameRunning = ref(false);
+const gameOver = ref(false);
+
+const intervalId = ref(null);
+
 const grid = ref(
 	Array.from({ length: ROWS }, () => Array(COLS).fill("empty"))
 );
@@ -46,16 +51,32 @@ function handleKeyPress(e) {
 	renderPiece();
 }
 
-onMounted(() => {
-	window.addEventListener('keydown', handleKeyPress);
+function startGame() {
+	if (isGameRunning.value)
+		return ;
+
+	isGameRunning.value = true;
 
 	// Faire descendre la pièce automatiquement
-	setInterval(() => {
+	intervalId.value = setInterval(() => {
 		activePiece.value.y += 1;
 		renderPiece();
 	}, 500);
 
 	renderPiece();
+}
+
+function stopGame() {
+	isGameRunning.value = false;
+
+	if (intervalId.value !== null) {
+		clearInterval(intervalId.value);
+		intervalId.value = null;
+	}
+}
+
+onMounted(() => {
+	window.addEventListener('keydown', handleKeyPress);
 });
 </script>
 
@@ -86,7 +107,7 @@ onMounted(() => {
 
 		<div class="controls">
 			<button v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</button>
-			<button v-if="gameOver" @click="restartGame">RESTART</button>
+<!-- 			<button v-if="gameOver" @click="restartGame">RESTART</button> -->
 			<button v-if="isGameRunning" @click="stopGame">PAUSE</button>
 		</div>
 
