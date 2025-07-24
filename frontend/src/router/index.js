@@ -12,9 +12,10 @@ const router = createRouter({
 			component: Home,
 		},
 		{
-			path: '/lobby',
+			path: '/:seed',
 			name: 'Lobby',
 			component: Lobby,
+			props: true,
 		},
 		{
 			path: '/game',

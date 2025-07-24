@@ -1,8 +1,12 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/AppButton.vue'
+import socket from '@/socket';
 
 const router = useRouter()
+const route = useRoute()
+const seed = route.params.seed;
+console.log('Lobby join !');
 
 function createGame() {
 	router.push('/game')

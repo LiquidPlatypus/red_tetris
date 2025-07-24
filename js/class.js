@@ -16,20 +16,19 @@ export const changePlayer = (username, host, status, id) => {
 };
 
 export const Game = (seed) => {
-    let players = [];
+    const players = new Map();
 
     return {
         getSeed: () => seed,
         addPlayer: (player) => {
-            players.push(player);
+            players.set(player.getId(), player);
         },
-        getPlayer: (username) => {
-            players.find(p => p.getUsername() !== username)
+        getPlayer: (playerID) => {
+            players.get(playerID);
         },
         removePlayer: (player) => {
-            players = players.filter(p => p.getUsername() !== player.getUsername());
+            players.delete(player.getId());
         },
-        getPlayerList: () => players
     }
 };
 
@@ -41,13 +40,6 @@ export const removeGame = (game) => {
     console.log(`${game.getSeed()}: game removed`);
     games.delete(game.getSeed());
 }
-
-export const newHost = (player_list, game) => {
-    let player = player_list[0];
-    game.removePlayer(player);
-    player = changePlayer(player.getUsername(), true, player.getStatus());
-    game.addPlayer(player);
-};
 
 export const getGame = (seed) => {
     return games.get(seed);
