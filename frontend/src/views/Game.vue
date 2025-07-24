@@ -264,7 +264,25 @@ h3 {
 .block-I { background-color: cyan; }
 .block-J { background-color: blue; }
 .block-L { background-color: orange; }
-.block-O { background-color: yellow; }
+.block-O {
+	background-color: yellow;
+	border: 2px black solid;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+
+.block-O::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
 .block-S { background-color: lime; }
 .block-T { background-color: purple; }
 .block-Z { background-color: red; }
