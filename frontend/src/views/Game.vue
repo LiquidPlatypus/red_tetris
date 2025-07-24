@@ -6,14 +6,38 @@ const COLS = 10;
 
 const isGameRunning = ref(false);
 const gameOver = ref(false);
+const lines = ref(0)
 
 const intervalId = ref(null);
 
-const grid = ref(
+// Grille principale (quand les pieces se fixent).
+const permanentGrid = ref(
 	Array.from({ length: ROWS }, () => Array(COLS).fill("empty"))
 );
 
-const flattenedGrid = computed(() => grid.value.flat());
+// Grille visuelle (quand les pieces bougent).
+const visualGrid = ref(
+	Array.from({ length: ROWS }, () => Array(COLS).fill("empty"))
+)
+
+const flattenedGrid = computed(() => visualGrid.value.flat());
+
+const TETROMINOS = [
+	// I
+	{ shape: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], color: 'block-I' },
+	// J
+	{ shape: [[1,0,0], [1,1,1], [0,0,0]], color: 'block-J' },
+	// L
+	{ shape: [[0,0,1], [1,1,1], [0,0,0]], color: 'block-L' },
+	// O
+	{ shape: [[1,1], [1,1]], color: 'block-O' },
+	// S
+	{ shape: [[0,1,1], [1,1,0], [0,0,0]], color: 'block-S' },
+	// T
+	{ shape: [[0,1,0], [1,1,1], [0,0,0]], color: 'block-T' },
+	// Z
+	{ shape: [[1,1,0], [0,1,1], [0,0,0]], color: 'block-Z' }
+];
 
 const activePiece = ref({
 	shape: [
@@ -25,29 +49,48 @@ const activePiece = ref({
 });
 
 function renderPiece() {
-	const newGrid = Array.from({ length: ROWS }, () => Array(COLS).fill("empty"));
+	// Copier la grille permanente
+	visualGrid.value = permanentGrid.value.map(row => [...row]);
 
 	const { shape, x, y } = activePiece.value;
 
+	// Ajouter la pièce active à la grille visuelle
 	shape.forEach((row, dy) => {
 		row.forEach((value, dx) => {
 			if (value !== "empty") {
 				const px = x + dx;
 				const py = y + dy;
 				if (px >= 0 && px < COLS && py >= 0 && py < ROWS) {
-					newGrid[py][px] = value;
+					visualGrid.value[py][px] = value;
 				}
 			}
 		});
 	});
-
-	grid.value = newGrid;
 }
 
 function canMoveTo(x, y, shape) {
-	if (y < ROWS - 1)
-		return true;
-	return false;
+	if (!shape || !Array.isArray(shape))
+		return false;
+
+	for (let dy = 0; dy < shape.length; dy++) {
+		const row = shape[dy];
+		for (let dx = 0; dx < row.length; dx++) {
+			const cell = row[dx];
+			if (cell === "empty") continue;
+
+			const px = x + dx;
+			const py = y + dy;
+
+			// En dehors de la grille
+			if (px < 0 || px >= COLS || py >= ROWS)
+				return false;
+
+			// Collision avec une cellule existante
+			if (py >= 0 && permanentGrid.value[py][px] !== "empty")
+				return false;
+		}
+	}
+	return true;
 }
 
 function movePiece(dx, dy) {
@@ -63,21 +106,51 @@ function movePiece(dx, dy) {
 	return false;
 }
 
+
 function lockPiece() {
 	const { shape, x, y } = activePiece.value;
 
+	// Fixer la pièce dans la grille permanente
 	shape.forEach((row, dy) => {
 		row.forEach((value, dx) => {
-			grid.value[y][x] = value;
+			if (value !== "empty") {
+				const px = x + dx;
+				const py = y + dy;
+				if (py >= 0 && py < ROWS && px >= 0 && px < COLS) {
+					permanentGrid.value[py][px] = value;
+				}
+			}
 		});
 	});
 
-	for (let i = 0; i < ROWS; i++) {
-		let row = ROWS[i];
-		if (row.every(cell => cell !== "empty")) {
-			grid.value.splice(i, 1);
-			grid.value.unshift([...Array(COLS).fill("empty")]);
+	// Vérifier les lignes complètes
+	for (let i = ROWS - 1; i >= 0; i--) {
+		if (permanentGrid.value[i].every(cell => cell !== "empty")) {
+			permanentGrid.value.splice(i, 1);
+			permanentGrid.value.unshift(Array(COLS).fill("empty"));
+			lines.value++;
+			i++; // Revérifier la même ligne car on a ajouté une ligne vide en haut
 		}
+	}
+
+	// Créer une nouvelle pièce
+	spawnNewPiece();
+}
+
+function spawnNewPiece() {
+	activePiece.value = {
+		shape: [
+			["block-O", "block-O"],
+			["block-O", "block-O"]
+		],
+		x: 4,
+		y: 0
+	};
+
+	// Vérifier si la nouvelle pièce peut être placée (game over)
+	if (!canMoveTo(activePiece.value.x, activePiece.value.y, activePiece.value.shape)) {
+		gameOver.value = true;
+		stopGame();
 	}
 }
 
@@ -98,6 +171,8 @@ function startGame() {
 	if (isGameRunning.value)
 		return ;
 
+	window.addEventListener('keydown', handleKeyPress);
+
 	isGameRunning.value = true;
 
 	// Faire descendre la pièce automatiquement
@@ -115,6 +190,7 @@ function stopGame() {
 		clearInterval(intervalId.value);
 		intervalId.value = null;
 	}
+	window.removeEventListener("keydown", handleKeyPress);
 }
 
 onMounted(() => {
