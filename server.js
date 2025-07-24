@@ -46,10 +46,6 @@ io.on('connection', (socket) => {
         socket.emit('lobby-join', seed);
     });
 
-    socket.on('test-event', (data) => {
-        console.log('test-event received:', data);
-    });
-
     socket.on('join-game', (seed) => {
         io.to(`${seed}`).emit('client-join', instance_player.getUsername());
         socket.join(`${seed}`);
