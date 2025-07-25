@@ -24,6 +24,12 @@ const visualGrid = ref(
 
 const flattenedGrid = computed(() => visualGrid.value.flat());
 
+const nextGrid = ref(
+	Array.from({ length: 4 }, () => Array(4).fill("empty"))
+)
+
+const flattenedNextPiece = computed(() => nextGrid.value.flat());
+
 const TETROMINOS = [
 	// I
 	{ shape: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], x: 4, y: 0, color: 'block-I' },
@@ -45,11 +51,29 @@ function getRandomTetromino() {
 	const randomIndex = Math.floor(Math.random() * TETROMINOS.length);
 	const tetromino = TETROMINOS[randomIndex]
 
+	if (isGameRunning.value)
+		renderNextPiece(tetromino);
+
 	return {
 		shape: tetromino.shape.map(row => row.map(cell => cell ? tetromino.color : "empty")),
 		x: tetromino.x,
 		y: tetromino.y
 	};
+}
+
+function clearNextGrid() {
+	nextGrid.value = Array.from({ length: 4 }, () => Array(4).fill("empty"));
+}
+
+function renderNextPiece(tetromino) {
+	clearNextGrid();
+
+	tetromino.shape.forEach((row, dy) => {
+		row.forEach((value, dx) => {
+			if (value !== 0)
+				nextGrid.value[dy][dx] = tetromino.color;
+		});
+	});
 }
 
 const activePiece = ref(getRandomTetromino());
