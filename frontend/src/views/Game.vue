@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 const ROWS = 20;
 const COLS = 10;
@@ -111,9 +111,15 @@ function movePiece(dx, dy) {
 }
 
 function rotatePiece() {
-	activePiece.value.shape = activePiece.value.shape[0].map((_, colIndex) =>
+	const rotated = activePiece.value.shape[0].map((_, colIndex) =>
 		activePiece.value.shape.map(row => row[colIndex]).reverse()
 	);
+
+	const x = activePiece.value.x;
+	const y = activePiece.value.y;
+
+	if (canMoveTo(x, y, rotated))
+		activePiece.value.shape = rotated;
 }
 
 function lockPiece() {
