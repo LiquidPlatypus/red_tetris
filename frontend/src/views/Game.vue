@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import {computed, onMounted, ref} from 'vue';
 
 const ROWS = 20;
 const COLS = 10;
@@ -24,29 +24,33 @@ const flattenedGrid = computed(() => visualGrid.value.flat());
 
 const TETROMINOS = [
 	// I
-	{ shape: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], color: 'block-I' },
+	{ shape: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], x: 4, y: 0, color: 'block-I' },
 	// J
-	{ shape: [[1,0,0], [1,1,1], [0,0,0]], color: 'block-J' },
+	{ shape: [[1,0,0], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-J' },
 	// L
-	{ shape: [[0,0,1], [1,1,1], [0,0,0]], color: 'block-L' },
+	{ shape: [[0,0,1], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-L' },
 	// O
-	{ shape: [[1,1], [1,1]], color: 'block-O' },
+	{ shape: [[1,1], [1,1]], x: 4, y: 0, color: 'block-O' },
 	// S
-	{ shape: [[0,1,1], [1,1,0], [0,0,0]], color: 'block-S' },
+	{ shape: [[0,1,1], [1,1,0], [0,0,0]], x: 4, y: 0, color: 'block-S' },
 	// T
-	{ shape: [[0,1,0], [1,1,1], [0,0,0]], color: 'block-T' },
+	{ shape: [[0,1,0], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-T' },
 	// Z
-	{ shape: [[1,1,0], [0,1,1], [0,0,0]], color: 'block-Z' }
+	{ shape: [[1,1,0], [0,1,1], [0,0,0]], x: 4, y: 0, color: 'block-Z' }
 ];
 
-const activePiece = ref({
-	shape: [
-		["block-O", "block-O"],
-		["block-O", "block-O"]
-	],
-	x: 4,
-	y: 0
-});
+function getRandomTetromino() {
+	const randomIndex = Math.floor(Math.random() * TETROMINOS.length);
+	const tetromino = TETROMINOS[randomIndex]
+
+	return {
+		shape: tetromino.shape.map(row => row.map(cell => cell ? tetromino.color : "empty")),
+		x: tetromino.x,
+		y: tetromino.y
+	};
+}
+
+const activePiece = ref(getRandomTetromino());
 
 function renderPiece() {
 	// Copier la grille permanente
@@ -106,6 +110,11 @@ function movePiece(dx, dy) {
 	return false;
 }
 
+function rotatePiece() {
+	activePiece.value.shape = activePiece.value.shape[0].map((_, colIndex) =>
+		activePiece.value.shape.map(row => row[colIndex]).reverse()
+	);
+}
 
 function lockPiece() {
 	const { shape, x, y } = activePiece.value;
@@ -138,14 +147,7 @@ function lockPiece() {
 }
 
 function spawnNewPiece() {
-	activePiece.value = {
-		shape: [
-			["block-O", "block-O"],
-			["block-O", "block-O"]
-		],
-		x: 4,
-		y: 0
-	};
+	activePiece.value = getRandomTetromino();
 
 	// Vérifier si la nouvelle pièce peut être placée (game over)
 	if (!canMoveTo(activePiece.value.x, activePiece.value.y, activePiece.value.shape)) {
@@ -164,6 +166,7 @@ function handleKeyPress(e) {
 	if (e.key === "ArrowLeft") movePiece(-1, 0);
 	else if (e.key === "ArrowRight") movePiece(1, 0);
 	else if (e.key === "ArrowDown") movePiece(0, 1);
+	else if (e.key === "ArrowUp") rotatePiece();
 	renderPiece();
 }
 
@@ -337,9 +340,60 @@ h3 {
 	text-align: center;
 }
 
-.block-I { background-color: cyan; }
-.block-J { background-color: blue; }
-.block-L { background-color: orange; }
+.block-I {
+	background-color: cyan;
+	border: 2px solid black;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-I::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
+.block-J {
+	background-color: blue;
+	border: 2px solid black;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-J::before {
+	 content: "";
+	 position: absolute;
+	 top: 50%;
+	 left: 50%;
+	 transform: translate(-50%, -50%);
+	 width: 50%;
+	 height: 50%;
+	 background-color: black;
+ }
+
+.block-L {
+	background-color: orange;
+	border: 2px solid black;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-L::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
 .block-O {
 	background-color: yellow;
 	border: 2px black solid;
@@ -347,7 +401,6 @@ h3 {
 	width: 20px;
 	height: 20px;
 }
-
 .block-O::before {
 	content: "";
 	position: absolute;
@@ -359,9 +412,59 @@ h3 {
 	background-color: black;
 }
 
-.block-S { background-color: lime; }
-.block-T { background-color: purple; }
-.block-Z { background-color: red; }
+.block-S {
+	background-color: lime;
+	border: 2px black solid;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-S::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
+.block-T {
+	background-color: purple;
+	border: 2px black solid;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-T::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
+.block-Z {
+	background-color: red;
+	border: 2px black solid;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.block-Z::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
 
 .next-piece-table {
 	margin-top: 5px;
