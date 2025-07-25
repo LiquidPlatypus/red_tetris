@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import AppButton from "@/components/AppButton.vue";
+import App from "@/App.vue";
 
 const ROWS = 20;
 const COLS = 10;
@@ -233,9 +235,9 @@ onMounted(() => {
 		</div>
 
 		<div class="controls">
-			<button v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</button>
+			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
 <!-- 			<button v-if="gameOver" @click="restartGame">RESTART</button> -->
-			<button v-if="isGameRunning" @click="stopGame">PAUSE</button>
+			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
 		</div>
 
 		<div v-if="gameOver" class="game-over">
@@ -326,6 +328,7 @@ main {
 }
 
 .controls {
+	margin-top: 0.5rem;
 	grid-column: 1 / 4;
 	grid-row: 4;
 	text-align: center;
