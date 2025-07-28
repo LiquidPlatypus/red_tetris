@@ -1,20 +1,21 @@
-import { createRouter, createWebHistory } from "vue-router";
-import Home from "../views/Home.vue";
-import Game from "../views/Game.vue";
-import Lobby from "../views/Lobby.vue";
+import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home.vue'
+import Game from '../views/Game.vue'
+import Lobby from '../views/Lobby.vue'
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: [
 		{
-			path: "/",
-			name: "Home",
+			path: '/',
+			name: 'Home',
 			component: Home,
 		},
 		{
-			path: "/lobby",
-			name: "Lobby",
+			path: '/:seed',
+			name: 'Lobby',
 			component: Lobby,
+			props: true,
 		},
 		{
 			path: '/:seed/:username',
@@ -28,6 +29,6 @@ const router = createRouter({
 			component: Game,
 		},
 	],
-});
+})
 
-export default router;
+export default router

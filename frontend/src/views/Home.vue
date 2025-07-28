@@ -4,22 +4,24 @@ import { useRouter } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import socket from "@/socket.js";
 
-socket.on("messageFromServer", (message) => {
-	console.log(message);
+const router = useRouter();
+
+const pseudo = ref('');
+
+function createLobby() {
+	if (pseudo.value.trim() === '') return;
+	socket.emit('create-lobby', pseudo.value);
+}
+
+socket.on('lobby-join', (seed) => {
+	socket.emit('join-game', seed);
+	router.push(`/${seed}`);
 });
 socket.on('error', (message) => {
 	console.error(message);
 	window.alert(message);
 });
 
-const router = useRouter();
-
-const pseudo = ref("");
-
-function createLobby() {
-	if (pseudo.value.trim() === "") return;
-	router.push("/lobby");
-}
 </script>
 
 <template>
