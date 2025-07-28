@@ -372,6 +372,10 @@ onMounted(() => {
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
 		</div>
 
+		<div class="pause-overlay" v-if="isPaused">
+			PAUSE
+		</div>
+
 		<div v-if="gameOver" class="game-over">
 			<h2>GAME OVER !</h2>
 		</div>
@@ -473,6 +477,24 @@ main {
 	text-align: center;
 	color: #ff0000;
 	font-weight: bold;
+}
+
+.pause-overlay {
+	position: absolute;
+	top: 50%;
+	left: 45.2%;
+	transform: translate(-50%, -50%);
+	font-size: 2rem;
+	font-weight: bold;
+	color: RED;
+	z-index: 10;
+	animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+	100% {
+		opacity: 0;
+	}
 }
 
 h3 {
