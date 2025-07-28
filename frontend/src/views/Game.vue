@@ -327,7 +327,8 @@ function startGame() {
 
 function stopGame() {
 	isGameRunning.value = false;
-	isPaused.value = true;
+	if (!gameOver.value)
+		isPaused.value = true;
 
 	if (intervalId.value !== null) {
 		clearInterval(intervalId.value);
