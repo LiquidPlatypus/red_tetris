@@ -1,22 +1,21 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import AppButton from '@/components/AppButton.vue'
-import socket from '@/socket.js'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import AppButton from "@/components/AppButton.vue";
+import socket from "@/socket.js";
 
-socket.on('messageFromServer', (message) => {
+socket.on("messageFromServer", (message) => {
 	console.log(message);
 });
 
-const router = useRouter()
+const router = useRouter();
 
-const pseudo = ref('')
+const pseudo = ref("");
 
 function createLobby() {
-	if (pseudo.value.trim() === '') return
-	router.push('/lobby')
+	if (pseudo.value.trim() === "") return;
+	router.push("/lobby");
 }
-
 </script>
 
 <template>
@@ -43,7 +42,7 @@ function createLobby() {
 }
 
 input::placeholder {
-	font-family: 'ModernTetris', sans-serif;
+	font-family: "ModernTetris", sans-serif;
 	font-size: 0.8rem;
 	color: darkgrey;
 }

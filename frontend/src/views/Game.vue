@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from "vue";
 import AppButton from "@/components/AppButton.vue";
 import App from "@/App.vue";
 
@@ -8,56 +8,112 @@ const COLS = 10;
 
 const isGameRunning = ref(false);
 const gameOver = ref(false);
-const lines = ref(0)
+const lines = ref(0);
 
 const intervalId = ref(null);
 
 // Grille principale (quand les pieces se fixent).
-const permanentGrid = ref(
-	Array.from({ length: ROWS }, () => Array(COLS).fill("empty"))
-);
+const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
 
 // Grille visuelle (quand les pieces bougent).
-const visualGrid = ref(
-	Array.from({ length: ROWS }, () => Array(COLS).fill("empty"))
-)
+const visualGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
 
 const flattenedGrid = computed(() => visualGrid.value.flat());
 
-const nextGrid = ref(
-	Array.from({ length: 4 }, () => Array(4).fill("empty"))
-)
+const nextGrid = ref(Array.from({ length: 4 }, () => Array(4).fill("empty")));
 
 const flattenedNextPiece = computed(() => nextGrid.value.flat());
 
 const TETROMINOS = [
 	// I
-	{ shape: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], x: 4, y: 0, color: 'block-I' },
+	{
+		shape: [
+			[0, 0, 0, 0],
+			[1, 1, 1, 1],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-I",
+	},
 	// J
-	{ shape: [[1,0,0], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-J' },
+	{
+		shape: [
+			[1, 0, 0],
+			[1, 1, 1],
+			[0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-J",
+	},
 	// L
-	{ shape: [[0,0,1], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-L' },
+	{
+		shape: [
+			[0, 0, 1],
+			[1, 1, 1],
+			[0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-L",
+	},
 	// O
-	{ shape: [[1,1], [1,1]], x: 4, y: 0, color: 'block-O' },
+	{
+		shape: [
+			[1, 1],
+			[1, 1],
+		],
+		x: 4,
+		y: 0,
+		color: "block-O",
+	},
 	// S
-	{ shape: [[0,1,1], [1,1,0], [0,0,0]], x: 4, y: 0, color: 'block-S' },
+	{
+		shape: [
+			[0, 1, 1],
+			[1, 1, 0],
+			[0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-S",
+	},
 	// T
-	{ shape: [[0,1,0], [1,1,1], [0,0,0]], x: 4, y: 0, color: 'block-T' },
+	{
+		shape: [
+			[0, 1, 0],
+			[1, 1, 1],
+			[0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-T",
+	},
 	// Z
-	{ shape: [[1,1,0], [0,1,1], [0,0,0]], x: 4, y: 0, color: 'block-Z' }
+	{
+		shape: [
+			[1, 1, 0],
+			[0, 1, 1],
+			[0, 0, 0],
+		],
+		x: 4,
+		y: 0,
+		color: "block-Z",
+	},
 ];
 
 function getRandomTetromino() {
 	const randomIndex = Math.floor(Math.random() * TETROMINOS.length);
-	const tetromino = TETROMINOS[randomIndex]
+	const tetromino = TETROMINOS[randomIndex];
 
-	if (isGameRunning.value)
-		renderNextPiece(tetromino);
+	if (isGameRunning.value) renderNextPiece(tetromino);
 
 	return {
-		shape: tetromino.shape.map(row => row.map(cell => cell ? tetromino.color : "empty")),
+		shape: tetromino.shape.map((row) => row.map((cell) => (cell ? tetromino.color : "empty"))),
 		x: tetromino.x,
-		y: tetromino.y
+		y: tetromino.y,
 	};
 }
 
@@ -70,8 +126,7 @@ function renderNextPiece(tetromino) {
 
 	tetromino.shape.forEach((row, dy) => {
 		row.forEach((value, dx) => {
-			if (value !== 0)
-				nextGrid.value[dy][dx] = tetromino.color;
+			if (value !== 0) nextGrid.value[dy][dx] = tetromino.color;
 		});
 	});
 }
@@ -80,7 +135,7 @@ const activePiece = ref(getRandomTetromino());
 
 function renderPiece() {
 	// Copier la grille permanente
-	visualGrid.value = permanentGrid.value.map(row => [...row]);
+	visualGrid.value = permanentGrid.value.map((row) => [...row]);
 
 	const { shape, x, y } = activePiece.value;
 
@@ -99,8 +154,7 @@ function renderPiece() {
 }
 
 function canMoveTo(x, y, shape) {
-	if (!shape || !Array.isArray(shape))
-		return false;
+	if (!shape || !Array.isArray(shape)) return false;
 
 	for (let dy = 0; dy < shape.length; dy++) {
 		const row = shape[dy];
@@ -112,12 +166,10 @@ function canMoveTo(x, y, shape) {
 			const py = y + dy;
 
 			// En dehors de la grille
-			if (px < 0 || px >= COLS || py >= ROWS)
-				return false;
+			if (px < 0 || px >= COLS || py >= ROWS) return false;
 
 			// Collision avec une cellule existante
-			if (py >= 0 && permanentGrid.value[py][px] !== "empty")
-				return false;
+			if (py >= 0 && permanentGrid.value[py][px] !== "empty") return false;
 		}
 	}
 	return true;
@@ -138,14 +190,13 @@ function movePiece(dx, dy) {
 
 function rotatePiece() {
 	const rotated = activePiece.value.shape[0].map((_, colIndex) =>
-		activePiece.value.shape.map(row => row[colIndex]).reverse()
+		activePiece.value.shape.map((row) => row[colIndex]).reverse(),
 	);
 
 	const x = activePiece.value.x;
 	const y = activePiece.value.y;
 
-	if (canMoveTo(x, y, rotated))
-		activePiece.value.shape = rotated;
+	if (canMoveTo(x, y, rotated)) activePiece.value.shape = rotated;
 }
 
 function lockPiece() {
@@ -166,7 +217,7 @@ function lockPiece() {
 
 	// Vérifier les lignes complètes
 	for (let i = ROWS - 1; i >= 0; i--) {
-		if (permanentGrid.value[i].every(cell => cell !== "empty")) {
+		if (permanentGrid.value[i].every((cell) => cell !== "empty")) {
 			permanentGrid.value.splice(i, 1);
 			permanentGrid.value.unshift(Array(COLS).fill("empty"));
 			lines.value++;
@@ -189,8 +240,7 @@ function spawnNewPiece() {
 }
 
 function tick() {
-	if (!movePiece(0, 1))
-		lockPiece();
+	if (!movePiece(0, 1)) lockPiece();
 	renderPiece();
 }
 
@@ -203,10 +253,9 @@ function handleKeyPress(e) {
 }
 
 function startGame() {
-	if (isGameRunning.value)
-		return ;
+	if (isGameRunning.value) return;
 
-	window.addEventListener('keydown', handleKeyPress);
+	window.addEventListener("keydown", handleKeyPress);
 
 	isGameRunning.value = true;
 
@@ -229,7 +278,7 @@ function stopGame() {
 }
 
 onMounted(() => {
-	window.addEventListener('keydown', handleKeyPress);
+	window.addEventListener("keydown", handleKeyPress);
 });
 </script>
 
@@ -260,7 +309,7 @@ onMounted(() => {
 
 		<div class="controls">
 			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
-<!-- 			<button v-if="gameOver" @click="restartGame">RESTART</button> -->
+			<!-- 			<button v-if="gameOver" @click="restartGame">RESTART</button> -->
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
 		</div>
 
@@ -399,15 +448,15 @@ h3 {
 	height: 20px;
 }
 .block-J::before {
-	 content: "";
-	 position: absolute;
-	 top: 50%;
-	 left: 50%;
-	 transform: translate(-50%, -50%);
-	 width: 50%;
-	 height: 50%;
-	 background-color: black;
- }
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
 
 .block-L {
 	background-color: orange;

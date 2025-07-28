@@ -1,9 +1,8 @@
 <script setup lang="ts">
-
 const props = defineProps<{
-	label?: string
-	type?: 'button' | 'submit' | 'reset'
-}>()
+	label?: string;
+	type?: "button" | "submit" | "reset";
+}>();
 </script>
 
 <template>
@@ -18,7 +17,7 @@ const props = defineProps<{
 	background-color: #777482;
 	height: 4vh;
 	cursor: pointer;
-	font-family: 'ModernTetris', sans-serif;
+	font-family: "ModernTetris", sans-serif;
 }
 
 .app-button:hover {

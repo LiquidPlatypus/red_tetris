@@ -1,11 +1,11 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import AppButton from '@/components/AppButton.vue'
+import { useRouter } from "vue-router";
+import AppButton from "@/components/AppButton.vue";
 
-const router = useRouter()
+const router = useRouter();
 
 function createGame() {
-	router.push('/game')
+	router.push("/game");
 }
 </script>
 
