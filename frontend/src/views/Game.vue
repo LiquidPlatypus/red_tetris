@@ -7,6 +7,7 @@ const COLS = 10;
 
 const isGameRunning = ref(false);
 const gameOver = ref(false);
+const isPaused = ref(false);
 const lines = ref(0);
 
 const intervalId = ref(null);
@@ -308,8 +309,12 @@ function startGame() {
 
 	isGameRunning.value = true;
 
-	activePiece.value = nextPiece.value;
-	nextPiece.value = getNextTetromino();
+	if (isPaused.value === false) {
+		activePiece.value = nextPiece.value;
+		nextPiece.value = getNextTetromino();
+	}
+
+	isPaused.value = false;
 
 	// Faire descendre la pièce automatiquement
 	intervalId.value = setInterval(() => {
@@ -322,6 +327,7 @@ function startGame() {
 
 function stopGame() {
 	isGameRunning.value = false;
+	isPaused.value = true;
 
 	if (intervalId.value !== null) {
 		clearInterval(intervalId.value);
@@ -351,10 +357,10 @@ onMounted(() => {
 				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 				<div id="next-piece" class="infos pixel-corners next-piece-grid">
 					<div
-						v-for="(cell, index) in flattenedNextPiece"
+						v-for="(cell_next_piece, index) in flattenedNextPiece"
 						:key="index"
-						:class="cell"
-						class="cell"
+						:class="cell_next_piece"
+						class="cell_next_piece"
 					></div>
 				</div>
 			</div>
