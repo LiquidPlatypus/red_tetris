@@ -1,27 +1,25 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import AppButton from '@/components/AppButton.vue'
-import socket from '@/socket.js'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import AppButton from "@/components/AppButton.vue";
+import socket from "@/socket.js";
 
-const router = useRouter()
-
-const pseudo = ref('')
-
-function createLobby() {
-	if (pseudo.value.trim() === '') return;
-	socket.emit('create-lobby', pseudo.value);
-}
-
-socket.on('lobby-join', (seed) => {
-	socket.emit('join-game', seed);
-	router.push(`/${seed}`);
+socket.on("messageFromServer", (message) => {
+	console.log(message);
 });
 socket.on('error', (message) => {
 	console.error(message);
 	window.alert(message);
 });
 
+const router = useRouter();
+
+const pseudo = ref("");
+
+function createLobby() {
+	if (pseudo.value.trim() === "") return;
+	router.push("/lobby");
+}
 </script>
 
 <template>
@@ -48,7 +46,7 @@ socket.on('error', (message) => {
 }
 
 input::placeholder {
-	font-family: 'ModernTetris', sans-serif;
+	font-family: "ModernTetris", sans-serif;
 	font-size: 0.8rem;
 	color: darkgrey;
 }
