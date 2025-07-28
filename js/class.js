@@ -24,11 +24,12 @@ export const Game = (seed) => {
             players.set(player.getId(), player);
         },
         getPlayer: (playerID) => {
-            players.get(playerID);
+            return players.get(playerID);
         },
         removePlayer: (player) => {
             players.delete(player.getId());
         },
+        getPlayerList: () => players,
     }
 };
 
