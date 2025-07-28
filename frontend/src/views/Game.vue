@@ -103,18 +103,48 @@ const TETROMINOS = [
 	},
 ];
 
-function getRandomTetromino() {
-	const randomIndex = Math.floor(Math.random() * TETROMINOS.length);
-	const tetromino = TETROMINOS[randomIndex];
+// TEMPORAIRE
+const seed = 12345;
 
-	if (isGameRunning.value) renderNextPiece(tetromino);
-
-	return {
-		shape: tetromino.shape.map((row) => row.map((cell) => (cell ? tetromino.color : "empty"))),
-		x: tetromino.x,
-		y: tetromino.y,
+function createSeededRandom(seed) {
+	let state = seed;
+	return function () {
+		state = (state * 1664525 + 1013904223) % 4294967296;
+		return state / 4294967296;
 	};
 }
+
+function createTetrominoGenerator(seed) {
+	const random = createSeededRandom(seed);
+	const bag = [];
+
+	function refillBag() {
+		const indices = [...Array(TETROMINOS.length).keys()];
+		for (let i = indices.length -1; i > 0; i--) {
+			const j = Math.floor(random() * (i + 1));
+			[indices[i], indices[j]] = [indices[j], indices[i]];
+		}
+		bag.push(...indices);
+	}
+
+	return function getNextTetromino() {
+		if (bag.length === 0)
+			refillBag();
+		const index = bag.shift();
+		const tetromino = TETROMINOS[index];
+		return {
+			shape: tetromino.shape.map(row => row.map(cell => (cell ? tetromino.color : "empty"))),
+			x: tetromino.x,
+			y: tetromino.y,
+			color: tetromino.color,
+		};
+	};
+}
+
+const getNextTetromino = createTetrominoGenerator(seed);
+
+const nextPiece = ref(getNextTetromino());
+const activePiece = ref(null);
 
 function clearNextGrid() {
 	nextGrid.value = Array.from({ length: 4 }, () => Array(4).fill("empty"));
@@ -129,8 +159,6 @@ function renderNextPiece(tetromino) {
 		});
 	});
 }
-
-const activePiece = ref(getRandomTetromino());
 
 function renderPiece() {
 	// Copier la grille permanente
@@ -224,12 +252,15 @@ function lockPiece() {
 		}
 	}
 
+	activePiece.value = nextPiece.value;
+	nextPiece.value = getNextTetromino();
+	renderNextPiece(nextPiece.value);
+
 	// Créer une nouvelle pièce
 	spawnNewPiece();
 }
 
 function spawnNewPiece() {
-	activePiece.value = getRandomTetromino();
 
 	// Vérifier si la nouvelle pièce peut être placée (game over)
 	if (!canMoveTo(activePiece.value.x, activePiece.value.y, activePiece.value.shape)) {
@@ -258,11 +289,15 @@ function startGame() {
 
 	isGameRunning.value = true;
 
+	activePiece.value = nextPiece.value;
+	nextPiece.value = getNextTetromino();
+
 	// Faire descendre la pièce automatiquement
 	intervalId.value = setInterval(() => {
 		tick();
 	}, 500);
 
+	renderNextPiece(nextPiece.value);
 	renderPiece();
 }
 
@@ -372,6 +407,7 @@ main {
 	width: 20px;
 	height: 20px;
 	box-sizing: border-box;
+	border: 1px darkolivegreen solid;
 }
 
 .sidebar {
