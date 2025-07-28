@@ -17,6 +17,10 @@ socket.on('lobby-join', (seed) => {
 	socket.emit('join-game', seed);
 	router.push(`/${seed}`);
 });
+socket.on('error', (message) => {
+	console.error(message);
+	window.alert(message);
+});
 
 </script>
 

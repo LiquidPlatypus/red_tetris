@@ -6,10 +6,32 @@ import socket from '@/socket';
 const router = useRouter()
 const route = useRoute()
 const seed = route.params.seed;
+const username = route.params.username;
 console.log('Lobby join !');
 
+if (seed && username) {
+	console.log('HERE');
+	socket.emit('join-user', { seed, username });
+}
+
+socket.on('client-join', (username) => {
+	console.log(`${username} join the game.`);
+});
+socket.on('error', (message) => {
+	console.error(message);
+	router.push('/');
+});
+
+socket.on('launch-game', () => {
+	router.push('/game');
+});
+
+socket.on('refresh-player', () => {
+	socket.emit('refreshme');
+});
+
 function createGame() {
-	router.push('/game')
+	socket.emit('launch-game', seed);
 }
 </script>
 
