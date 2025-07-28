@@ -1,15 +1,15 @@
-@import './base.css';
+@import "./base.css";
 
 @font-face {
-	font-family: 'ModernTetris';
-	src: url('./fonts/modern-tetris.otf.woff2/modern-tetris.otf.woff2');
+	font-family: "ModernTetris";
+	src: url("./fonts/modern-tetris.otf.woff2/modern-tetris.otf.woff2");
 	font-weight: normal;
 	font-style: normal;
 }
 
 @font-face {
-	font-family: 'Pixel';
-	src: url('./fonts/smallest_pixel-7.ttf') format('truetype');
+	font-family: "Pixel";
+	src: url("./fonts/smallest_pixel-7.ttf") format("truetype");
 	font-weight: normal;
 	font-style: normal;
 }
@@ -26,7 +26,7 @@ main {
 
 .title {
 	color: aliceblue;
-	font-family: 'ModernTetris', sans-serif;
+	font-family: "ModernTetris", sans-serif;
 	position: absolute;
 	top: 50px;
 	left: 50%;
