@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import AppButton from "@/components/AppButton.vue";
-import App from "@/App.vue";
 
 const ROWS = 20;
 const COLS = 10;
