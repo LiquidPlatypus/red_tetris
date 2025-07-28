@@ -150,12 +150,23 @@ function clearNextGrid() {
 	nextGrid.value = Array.from({ length: 4 }, () => Array(4).fill("empty"));
 }
 
-function renderNextPiece(tetromino) {
+function renderNextPiece() {
 	clearNextGrid();
 
-	tetromino.shape.forEach((row, dy) => {
+	const shape = nextPiece.value.shape;
+	const height = shape.length;
+	const width = shape[0].length;
+
+	const offsetX = Math.floor((4 - width) / 2);
+	const offsetY = Math.floor((4 - height) / 2);
+
+	shape.forEach((row, dy) => {
 		row.forEach((value, dx) => {
-			if (value !== 0) nextGrid.value[dy][dx] = tetromino.color;
+			if (value !== "empty"){
+				const px = offsetX + dx;
+				const py = offsetY + dy;
+				if (value !== 0) nextGrid.value[py][px] = value;
+			}
 		});
 	});
 }
@@ -226,6 +237,13 @@ function rotatePiece() {
 	if (canMoveTo(x, y, rotated)) activePiece.value.shape = rotated;
 }
 
+function hardDrop() {
+	while (movePiece(0, 1))
+		;
+	lockPiece();
+	renderPiece();
+}
+
 function lockPiece() {
 	const { shape, x, y } = activePiece.value;
 
@@ -254,7 +272,7 @@ function lockPiece() {
 
 	activePiece.value = nextPiece.value;
 	nextPiece.value = getNextTetromino();
-	renderNextPiece(nextPiece.value);
+	renderNextPiece();
 
 	// Créer une nouvelle pièce
 	spawnNewPiece();
@@ -279,6 +297,7 @@ function handleKeyPress(e) {
 	else if (e.key === "ArrowRight") movePiece(1, 0);
 	else if (e.key === "ArrowDown") movePiece(0, 1);
 	else if (e.key === "ArrowUp") rotatePiece();
+	else if (e.code === "Space") hardDrop();
 	renderPiece();
 }
 
@@ -297,7 +316,7 @@ function startGame() {
 		tick();
 	}, 500);
 
-	renderNextPiece(nextPiece.value);
+	renderNextPiece();
 	renderPiece();
 }
 
@@ -583,8 +602,4 @@ h3 {
 	background-color: black;
 }
 
-.next-piece-table {
-	margin-top: 5px;
-	border-collapse: collapse;
-}
 </style>
