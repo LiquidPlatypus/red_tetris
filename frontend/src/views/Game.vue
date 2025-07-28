@@ -492,10 +492,14 @@ main {
 }
 
 @keyframes blinker {
-	100% {
+	0%, 49% {
+		opacity: 1;
+	}
+	50%, 100% {
 		opacity: 0;
 	}
 }
+
 
 h3 {
 	color: #214132;
