@@ -481,7 +481,7 @@ main {
 
 .pause-overlay {
 	position: absolute;
-	top: 50%;
+	top: 48%;
 	left: 45.2%;
 	transform: translate(-50%, -50%);
 	font-size: 2rem;
