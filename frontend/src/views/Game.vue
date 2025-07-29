@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import AppButton from "@/components/AppButton.vue";
+import socket from '@/socket';
 
 const ROWS = 20;
 const COLS = 10;
@@ -105,7 +106,7 @@ const TETROMINOS = [
 ];
 
 // TEMPORAIRE
-const seed = 12345;
+const seed = 78963214478963214586;
 
 function createSeededRandom(seed) {
 	let state = seed;
@@ -142,9 +143,30 @@ function createTetrominoGenerator(seed) {
 	};
 }
 
+async function getPiece() {
+	return new Promise((resolve, reject) => {
+		socket.emit('get-piece');
+
+		socket.once('piece', (piece) => {
+			if (!piece) return reject('No piece received');
+
+			resolve({
+				shape: piece.getShape().map(row =>
+					row.map(cell => (cell ? piece.color : "empty"))
+				),
+				x: piece.getX(),
+				y: piece.getY(),
+				color: piece.getColor(),
+			});
+		});
+		setTimeout(() => reject('Timeout getting piece'), 1000);
+	});
+}
+
 const getNextTetromino = createTetrominoGenerator(seed);
 
-const nextPiece = ref(getNextTetromino());
+const nextPiece = ref(null);
+nextPiece.value = await getPiece();
 const activePiece = ref(null);
 
 function clearNextGrid() {

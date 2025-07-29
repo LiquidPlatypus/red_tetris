@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const os = require('os');
 const path = require('path');
 
-const { Player, Game, changePlayer, getGame, addGame, removeGame } = require('./js/class.js');
+const { Player, Game, getGame, addGame, removeGame, TETROMINOS  } = require('./js/class.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -31,27 +31,34 @@ app.get('/:room/:username', (req, res) => {
 
 io.on('connection', (socket) => {
     console.log('Client join the game.');
-    let instance_player = Player('', false, false, socket.id);
-    let instance_game = Game('');
+    let instance_player = new Player('', false, false, socket.id);
+    let instance_game = new Game('');
+    const bag = [];
 
-    // client click on create-game btn
+    // client click on create-game button :
     socket.on('create-lobby', (username) => {
         let seed = username + '_room';
         if (getGame(seed) === undefined) {
-            instance_game = Game(seed);
+            instance_game = new Game(seed);
             addGame(instance_game);
-            instance_player = changePlayer(username, true, true, instance_player.getId());
+            instance_player = new Player(username, true, true, instance_player.getId());
             console.log(`${seed} created !`);
-            socket.emit('lobby-join', seed);
+            socket.emit('lobby-join', seed); // return seed to client for URL in router
         } else {
             socket.emit('error', 'username already exist');
         }
     });
-
+    // when client receive seed for url, comfirm joining room :
+    socket.on('join-game', (seed) => {
+        io.to(`${seed}`).emit('client-join', instance_player.getUsername());
+        socket.join(`${seed}`);
+        instance_game.addPlayer(instance_player);
+    });
+    // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
         instance_game = getGame(seed);
         if (instance_game !== undefined) {
-            instance_player = changePlayer(username, false, true, socket.id);
+            instance_player = new Player(username, false, true, socket.id);
             io.to(`${seed}`).emit('client-join', instance_player.getUsername());
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
@@ -60,24 +67,28 @@ io.on('connection', (socket) => {
         }
     });
 
-
-    socket.on('join-game', (seed) => {
-        io.to(`${seed}`).emit('client-join', instance_player.getUsername());
-        socket.join(`${seed}`);
-        instance_game.addPlayer(instance_player);
+    socket.on('get-piece', () => {
+        if (instance_game) {
+            if (bag.length === 0)
+                instance_game.refillBag(bag);
+            const index = bag.shift();
+            const tetromino = TETROMINOS[index];
+            socket.emit('piece', tetromino);
+        }
     });
 
+    // when host click on launch game :
     socket.on('launch-game', (seed) => {
         if (instance_player.getHost() === true) {
             io.to(`${seed}`).emit('launch-game');
             console.log(`${seed} game launched now !`);
         }
+        else
+            console.log('nop');
     });
 
-    socket.on('refreshme', () => {
-        new_player = instance_game.getPlayer(instance_player.getId());
-        instance_player = new_player;
-    });
+    /// DISCONNECTION PART
+
     socket.on('disconnect', () => {
         console.log('Client left the game.');
         if (instance_game.getSeed() !== '') {
@@ -88,10 +99,17 @@ io.on('connection', (socket) => {
             else if (instance_player.getHost() === true) {
                 const element = player_list.values().next().value;
                 instance_game.removePlayer(element);
-                const new_host = Player(element.getUsername(), true, true, element.getId());
+                const new_host = new Player(element.getUsername(), true, true, element.getId());
                 instance_game.addPlayer(new_host);
-                io.to(element.getId()).emit('refresh-player');
+                io.to(element.getId()).emit('refresh-player'); // If new host defined, refresh his status on his side
             }
+        }
+    });
+    socket.on('refreshme', () => {
+        if (instance_game) {
+            new_player = instance_game.getPlayer(instance_player.getId());
+            console.log(new_player.getUsername());
+            instance_player = new_player;
         }
     });
 });
