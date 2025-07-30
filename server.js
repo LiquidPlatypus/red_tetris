@@ -87,6 +87,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('target-piece', (index) => {
+        if (instance_game) {
+            const tetromino = TETROMINOS[index];
+            socket.emit('target', {
+                shape: tetromino.getShape(),
+                color: tetromino.getColor(),
+            });
+        }
+    });
+
     // when host click on launch game :
     socket.on('launch-game', (seed) => {
         if (instance_player.getHost() === true) {

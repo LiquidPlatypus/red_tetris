@@ -118,7 +118,7 @@ function getRandomInt(max) {
 export class Game {
     constructor(seed) {
         const players = new Map();
-        const bSeed = getRandomInt(1156165465466);
+        const bSeed = getRandomInt(9156165465466);
 
         const instance = {
             getSeed: () => seed,
