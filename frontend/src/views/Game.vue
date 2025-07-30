@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from "vue";
 import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
 const ROWS = 20;
 const COLS = 10;
@@ -276,6 +279,9 @@ function lockPiece() {
 	nextPiece.value = getNextTetromino();
 	renderNextPiece();
 
+	if (lines.value > 0)
+		startInterval();
+
 	// Créer une nouvelle pièce
 	spawnNewPiece();
 }
@@ -303,6 +309,22 @@ function handleKeyPress(e) {
 	renderPiece();
 }
 
+function getIntervalDelay() {
+	// Exemple : diminue la vitesse de 50ms tous les 10 lignes, minimum 100ms
+	const baseSpeed = 500;
+	const speedup = Math.floor(lines.value / 10) * 50;
+	return Math.max(baseSpeed - speedup, 100); // minimum 100ms
+}
+
+function startInterval() {
+	if (intervalId.value !== null) clearInterval(intervalId.value);
+
+	intervalId.value = setInterval(() => {
+		tick();
+		console.log(getIntervalDelay());
+	}, getIntervalDelay());
+}
+
 function startGame() {
 	if (isGameRunning.value) return;
 
@@ -317,10 +339,7 @@ function startGame() {
 
 	isPaused.value = false;
 
-	// Faire descendre la pièce automatiquement
-	intervalId.value = setInterval(() => {
-		tick();
-	}, 500);
+	startInterval();
 
 	renderNextPiece();
 	renderPiece();
@@ -328,13 +347,17 @@ function startGame() {
 
 function stopGame() {
 	isGameRunning.value = false;
-	isPaused.value = true;
+	if (!gameOver.value)
+		isPaused.value = true;
 
 	if (intervalId.value !== null) {
 		clearInterval(intervalId.value);
 		intervalId.value = null;
 	}
 	window.removeEventListener("keydown", handleKeyPress);
+
+	if (gameOver.value)
+		router.push("/endgame");
 }
 
 onMounted(() => {
@@ -369,7 +392,6 @@ onMounted(() => {
 
 		<div class="controls">
 			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
-			<!-- 			<button v-if="gameOver" @click="restartGame">RESTART</button> -->
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
 		</div>
 
@@ -470,14 +492,6 @@ main {
 	grid-column: 1 / 4;
 	grid-row: 4;
 	text-align: center;
-}
-
-.game-over {
-	grid-column: 1 / 4;
-	grid-row: 5;
-	text-align: center;
-	color: #ff0000;
-	font-weight: bold;
 }
 
 .pause-overlay {
