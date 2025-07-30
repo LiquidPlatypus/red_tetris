@@ -19,7 +19,12 @@ function getLocalIP() {
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"],
+    }
+}); // A REMETTRE PAR DEFAUT !!!!!!!!!!!!!!
 
 app.use(express.static('frontend/dist'));
 app.get('/:room', (req, res) => {
