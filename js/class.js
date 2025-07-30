@@ -111,10 +111,14 @@ function createSeededRandom(seed) {
 
 /// GAME
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
 export class Game {
     constructor(seed) {
         const players = new Map();
-        const bSeed = 78963214478963214586;
+        const bSeed = getRandomInt(1156165465466);
 
         const instance = {
             getSeed: () => seed,

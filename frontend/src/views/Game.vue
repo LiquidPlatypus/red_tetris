@@ -143,30 +143,9 @@ function createTetrominoGenerator(seed) {
 	};
 }
 
-async function getPiece() {
-	return new Promise((resolve, reject) => {
-		socket.emit('get-piece');
-
-		socket.once('piece', (piece) => {
-			if (!piece) return reject('No piece received');
-
-			resolve({
-				shape: piece.getShape().map(row =>
-					row.map(cell => (cell ? piece.color : "empty"))
-				),
-				x: piece.getX(),
-				y: piece.getY(),
-				color: piece.getColor(),
-			});
-		});
-		setTimeout(() => reject('Timeout getting piece'), 1000);
-	});
-}
-
 const getNextTetromino = createTetrominoGenerator(seed);
 
-const nextPiece = ref(null);
-nextPiece.value = await getPiece();
+const nextPiece = ref(getNextTetromino());
 const activePiece = ref(null);
 
 function clearNextGrid() {

@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const os = require('os');
 const path = require('path');
 
-const { Player, Game, getGame, addGame, removeGame, TETROMINOS  } = require('./js/class.js');
+const { Player, Game, getGame, addGame, removeGame, TETROMINOS, Piece  } = require('./js/class.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -73,7 +73,12 @@ io.on('connection', (socket) => {
                 instance_game.refillBag(bag);
             const index = bag.shift();
             const tetromino = TETROMINOS[index];
-            socket.emit('piece', tetromino);
+            socket.emit('piece', {
+                shape: tetromino.getShape(),
+                x: tetromino.getX(),
+                y: tetromino.getY(),
+                color: tetromino.getColor(),
+            });
         }
     });
 
