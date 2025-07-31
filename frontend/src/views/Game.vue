@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import AppButton from "@/components/AppButton.vue";
+import socket from '@/socket';
 import {useRouter} from "vue-router";
 
 const router = useRouter();
@@ -27,127 +28,59 @@ const nextGrid = ref(Array.from({ length: 4 }, () => Array(4).fill("empty")));
 
 const flattenedNextPiece = computed(() => nextGrid.value.flat());
 
-const TETROMINOS = [
-	// I
-	{
-		shape: [
-			[0, 0, 0, 0],
-			[1, 1, 1, 1],
-			[0, 0, 0, 0],
-			[0, 0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-I",
-	},
-	// J
-	{
-		shape: [
-			[1, 0, 0],
-			[1, 1, 1],
-			[0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-J",
-	},
-	// L
-	{
-		shape: [
-			[0, 0, 1],
-			[1, 1, 1],
-			[0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-L",
-	},
-	// O
-	{
-		shape: [
-			[1, 1],
-			[1, 1],
-		],
-		x: 4,
-		y: 0,
-		color: "block-O",
-	},
-	// S
-	{
-		shape: [
-			[0, 1, 1],
-			[1, 1, 0],
-			[0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-S",
-	},
-	// T
-	{
-		shape: [
-			[0, 1, 0],
-			[1, 1, 1],
-			[0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-T",
-	},
-	// Z
-	{
-		shape: [
-			[1, 1, 0],
-			[0, 1, 1],
-			[0, 0, 0],
-		],
-		x: 4,
-		y: 0,
-		color: "block-Z",
-	},
-];
+async function getNextTetromino() {
+	return new Promise((resolve, reject) => {
+		socket.emit('get-piece');
 
-// TEMPORAIRE
-const seed = 45214852148658545541;
+		socket.once('piece', (piece) => {
+			if (!piece) return reject('No piece received');
 
-function createSeededRandom(seed) {
-	let state = seed;
-	return function () {
-		state = (state * 1664525 + 1013904223) % 4294967296;
-		return state / 4294967296;
-	};
+			resolve({
+				shape: piece.shape.map(row =>
+					row.map(cell => (cell ? piece.color : "empty"))
+				),
+				x: piece.x,
+				y: piece.y,
+				color: piece.color,
+			});
+		});
+		setTimeout(() => reject('Timeout getting piece'), 1000);
+	});
 }
+/**
+ * @param index Numero de la piece voulu dans la struct
+ * Trouve un moyen de recuperer l'index de la piece 
+ * et dans ta fonction movePiece ta juste a creer une nouvelle instance avec la nouvelle position
+ * et les mettres dans tes valeurs
+ * (va voir ta fonction j'ai mis des comments)
+ * 
+ * faut juste voir comment on fait pour rotate et pour mettre la nextPiece dans la activePiece
+ */
+// async function newPosPiece(index, new_x, new_y) {
+// 	return new Promise((resolve, reject) => {
+// 		socket.emit('target-piece', index);
 
-function createTetrominoGenerator(seed) {
-	const random = createSeededRandom(seed);
-	const bag = [];
+// 		socket.once('target', (piece) => {
+// 			if (!piece) return reject('No piece received');
 
-	function refillBag() {
-		const indices = [...Array(TETROMINOS.length).keys()];
-		for (let i = indices.length -1; i > 0; i--) {
-			const j = Math.floor(random() * (i + 1));
-			[indices[i], indices[j]] = [indices[j], indices[i]];
-		}
-		bag.push(...indices);
-	}
+// 			resolve({
+// 				shape: piece.shape.map(row =>
+// 					row.map(cell => (cell ? piece.color : "empty"))
+// 				),
+// 				x: new_x,
+// 				y: new_y,
+// 				color: piece.color,
+// 			});
+// 		});
+// 	});
+// }
 
-	return function getNextTetromino() {
-		if (bag.length === 0)
-			refillBag();
-		const index = bag.shift();
-		const tetromino = TETROMINOS[index];
-		return {
-			shape: tetromino.shape.map(row => row.map(cell => (cell ? tetromino.color : "empty"))),
-			x: tetromino.x,
-			y: tetromino.y,
-			color: tetromino.color,
-		};
-	};
-}
+const nextPiece = ref(null);
 
-const getNextTetromino = createTetrominoGenerator(seed);
+onMounted(async () => {
+	nextPiece.value = await getNextTetromino();
+});
 
-const nextPiece = ref(getNextTetromino());
 const activePiece = ref(null);
 
 function clearNextGrid() {
@@ -223,6 +156,9 @@ function movePiece(dx, dy) {
 	const shape = activePiece.value.shape;
 
 	if (canMoveTo(newX, newY, shape)) {
+		// supprimer et enlever l'affichage de activePiece
+		// fait ma fonction newPosPiece(<index>, newX, newY);
+		// render la piece avec ta fonction de render
 		activePiece.value.x = newX;
 		activePiece.value.y = newY;
 		return true;
@@ -248,7 +184,7 @@ function hardDrop() {
 	renderPiece();
 }
 
-function lockPiece() {
+async function lockPiece() {
 	const { shape, x, y } = activePiece.value;
 
 	// Fixer la pièce dans la grille permanente
@@ -275,7 +211,7 @@ function lockPiece() {
 	}
 
 	activePiece.value = nextPiece.value;
-	nextPiece.value = getNextTetromino();
+	nextPiece.value = await getNextTetromino();
 	renderNextPiece();
 
 	if (lines.value > 0)
@@ -324,7 +260,7 @@ function startInterval() {
 	}, getIntervalDelay());
 }
 
-function startGame() {
+async function startGame() {
 	if (isGameRunning.value) return;
 
 	window.addEventListener("keydown", handleKeyPress);
@@ -333,7 +269,7 @@ function startGame() {
 
 	if (isPaused.value === false) {
 		activePiece.value = nextPiece.value;
-		nextPiece.value = getNextTetromino();
+		nextPiece.value = await getNextTetromino();
 	}
 
 	isPaused.value = false;
