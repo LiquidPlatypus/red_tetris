@@ -1,8 +1,21 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
 import {useRouter} from "vue-router";
+
+import AppButton from "@/components/AppButton.vue";
+import {
+	calculateNewPosition,
+	calculateRotation,
+	canPlacePieceAt,
+	calculateHardDropPosition,
+	calculateGridAfterLocking,
+	calculateVisualGrid,
+	calculateNextPieceGrid,
+	attemptMove,
+	attemptRotation,
+	attemptHardDrop
+} from "../logic.js";
 
 const router = useRouter();
 
@@ -13,271 +26,190 @@ const isGameRunning = ref(false);
 const gameOver = ref(false);
 const isPaused = ref(false);
 const lines = ref(0);
-
 const intervalId = ref(null);
 
 // Grille principale (quand les pieces se fixent).
 const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
 
-// Grille visuelle (quand les pieces bougent).
-const visualGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
+// Pièces actives.
+const activePiece = ref(null);
+const nextPiece = ref(null);
+
+// Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
+const visualGrid = computed(() => {
+	return calculateVisualGrid(permanentGrid.value, activePiece.value);
+});
 
 const flattenedGrid = computed(() => visualGrid.value.flat());
 
-const nextGrid = ref(Array.from({ length: 4 }, () => Array(4).fill("empty")));
+const nextGrid = computed(() => {
+	return calculateNextPieceGrid(nextPiece.value, 4);
+});
 
-const flattenedNextPiece = computed(() => nextGrid.value.flat());
+const flattenedNextPiece = computed(() => nextGrid.value.flat())
+
+// ======== FONCTION DECOMMUNICATION AVEC LE SOCKET ========
 
 async function getNextTetromino() {
 	return new Promise((resolve, reject) => {
 		socket.emit('get-piece');
 
 		socket.once('piece', (piece) => {
-			if (!piece) return reject('No piece received');
+			if (!piece)
+				return reject("No piece received");
 
 			resolve({
 				shape: piece.shape.map(row =>
-					row.map(cell => (cell ? piece.color : "empty"))
-				),
+					row.map(cell => (cell ? piece.color : "empty"))),
 				x: piece.x,
 				y: piece.y,
 				color: piece.color,
 			});
 		});
-		setTimeout(() => reject('Timeout getting piece'), 1000);
-	});
-}
-/**
- * @param index Numero de la piece voulu dans la struct
- * Trouve un moyen de recuperer l'index de la piece 
- * et dans ta fonction movePiece ta juste a creer une nouvelle instance avec la nouvelle position
- * et les mettres dans tes valeurs
- * (va voir ta fonction j'ai mis des comments)
- * 
- * faut juste voir comment on fait pour rotate et pour mettre la nextPiece dans la activePiece
- */
-// async function newPosPiece(index, new_x, new_y) {
-// 	return new Promise((resolve, reject) => {
-// 		socket.emit('target-piece', index);
 
-// 		socket.once('target', (piece) => {
-// 			if (!piece) return reject('No piece received');
-
-// 			resolve({
-// 				shape: piece.shape.map(row =>
-// 					row.map(cell => (cell ? piece.color : "empty"))
-// 				),
-// 				x: new_x,
-// 				y: new_y,
-// 				color: piece.color,
-// 			});
-// 		});
-// 	});
-// }
-
-const nextPiece = ref(null);
-
-onMounted(async () => {
-	nextPiece.value = await getNextTetromino();
-});
-
-const activePiece = ref(null);
-
-function clearNextGrid() {
-	nextGrid.value = Array.from({ length: 4 }, () => Array(4).fill("empty"));
-}
-
-function renderNextPiece() {
-	clearNextGrid();
-
-	const shape = nextPiece.value.shape;
-	const height = shape.length;
-	const width = shape[0].length;
-
-	const offsetX = Math.floor((4 - width) / 2);
-	const offsetY = Math.floor((4 - height) / 2);
-
-	shape.forEach((row, dy) => {
-		row.forEach((value, dx) => {
-			if (value !== "empty"){
-				const px = offsetX + dx;
-				const py = offsetY + dy;
-				if (value !== 0) nextGrid.value[py][px] = value;
-			}
-		});
+		setTimeout(() => reject("Timeout getting piece"), 1000);
 	});
 }
 
-function renderPiece() {
-	// Copier la grille permanente
-	visualGrid.value = permanentGrid.value.map((row) => [...row]);
+// ======== ACTIONS UTILISATEUR ========
 
-	const { shape, x, y } = activePiece.value;
+async function handleMovePiece(dx, dy) {
+	if (!activePiece.value)
+		return false;
 
-	// Ajouter la pièce active à la grille visuelle
-	shape.forEach((row, dy) => {
-		row.forEach((value, dx) => {
-			if (value !== "empty") {
-				const px = x + dx;
-				const py = y + dy;
-				if (px >= 0 && px < COLS && py >= 0 && py < ROWS) {
-					visualGrid.value[py][px] = value;
-				}
-			}
-		});
-	});
-}
+	const moveResult = attemptMove(
+		activePiece.value,
+		permanentGrid.value,
+		dx, dy,
+		ROWS, COLS
+	);
 
-function canMoveTo(x, y, shape) {
-	if (!shape || !Array.isArray(shape)) return false;
-
-	for (let dy = 0; dy < shape.length; dy++) {
-		const row = shape[dy];
-		for (let dx = 0; dx < row.length; dx++) {
-			const cell = row[dx];
-			if (cell === "empty") continue;
-
-			const px = x + dx;
-			const py = y + dy;
-
-			// En dehors de la grille
-			if (px < 0 || px >= COLS || py >= ROWS) return false;
-
-			// Collision avec une cellule existante
-			if (py >= 0 && permanentGrid.value[py][px] !== "empty") return false;
-		}
-	}
-	return true;
-}
-
-function movePiece(dx, dy) {
-	const newX = activePiece.value.x + dx;
-	const newY = activePiece.value.y + dy;
-	const shape = activePiece.value.shape;
-
-	if (canMoveTo(newX, newY, shape)) {
-		// supprimer et enlever l'affichage de activePiece
-		// fait ma fonction newPosPiece(<index>, newX, newY);
-		// render la piece avec ta fonction de render
-		activePiece.value.x = newX;
-		activePiece.value.y = newY;
+	if (moveResult.success) {
+		activePiece.value = moveResult.newPiece;
 		return true;
 	}
+
 	return false;
 }
 
-function rotatePiece() {
-	const rotated = activePiece.value.shape[0].map((_, colIndex) =>
-		activePiece.value.shape.map((row) => row[colIndex]).reverse(),
+async function handleRotatePiece() {
+	if (!activePiece.value)
+		return false;
+
+	const rotationResult = attemptRotation(
+		activePiece.value,
+		permanentGrid.value,
+		ROWS, COLS
 	);
 
-	const x = activePiece.value.x;
-	const y = activePiece.value.y;
-
-	if (canMoveTo(x, y, rotated)) activePiece.value.shape = rotated;
+	if (rotationResult.success)
+		activePiece.value = rotationResult.newPiece;
 }
 
-function hardDrop() {
-	while (movePiece(0, 1))
-		;
-	lockPiece();
-	renderPiece();
-}
+async function handleHardDrop() {
+	if (!activePiece.value)
+		return false;
 
-async function lockPiece() {
-	const { shape, x, y } = activePiece.value;
+	const droppedPiece = attemptHardDrop(
+		activePiece.value,
+		permanentGrid.value,
+		ROWS, COLS
+	);
 
-	// Fixer la pièce dans la grille permanente
-	shape.forEach((row, dy) => {
-		row.forEach((value, dx) => {
-			if (value !== "empty") {
-				const px = x + dx;
-				const py = y + dy;
-				if (py >= 0 && py < ROWS && px >= 0 && px < COLS) {
-					permanentGrid.value[py][px] = value;
-				}
-			}
-		});
-	});
-
-	// Vérifier les lignes complètes
-	for (let i = ROWS - 1; i >= 0; i--) {
-		if (permanentGrid.value[i].every((cell) => cell !== "empty")) {
-			permanentGrid.value.splice(i, 1);
-			permanentGrid.value.unshift(Array(COLS).fill("empty"));
-			lines.value++;
-			i++; // Revérifier la même ligne car on a ajouté une ligne vide en haut
-		}
+	if (droppedPiece.success) {
+		activePiece.value = droppedPiece.newPiece;
+		return true;
 	}
 
-	activePiece.value = nextPiece.value;
-	nextPiece.value = await getNextTetromino();
-	renderNextPiece();
+	await handleLockPiece();
+}
 
-	if (lines.value > 0)
+async function handleLockPiece() {
+	if (!activePiece.value)
+		return;
+
+	const { newGrid, linesCleared } = calculateGridAfterLocking(
+		permanentGrid.value,
+		activePiece.value,
+		ROWS, COLS
+	);
+
+	permanentGrid.value = newGrid;
+	lines.value = linesCleared;
+
+	activePiece.value = nextPiece.value;
+	nextGrid.value = await getNextTetromino();
+
+	if (linesCleared > 0)
 		startInterval();
 
-	// Créer une nouvelle pièce
 	spawnNewPiece();
 }
 
 function spawnNewPiece() {
+	if (!activePiece.value)
+		return;
 
-	// Vérifier si la nouvelle pièce peut être placée (game over)
-	if (!canMoveTo(activePiece.value.x, activePiece.value.y, activePiece.value.shape)) {
+	const canSpawn = canPlacePieceAt(
+		activePiece.value,
+		permanentGrid.value,
+		ROWS, COLS
+	);
+
+	if (!canSpawn) {
 		gameOver.value = true;
 		stopGame();
 	}
 }
 
-function tick() {
-	if (!movePiece(0, 1)) lockPiece();
-	renderPiece();
-}
+// ======== GESTIONNAIRE D'ÉVÉNEMENTS ========
 
 function handleKeyPress(e) {
-	if (e.key === "ArrowLeft") movePiece(-1, 0);
-	else if (e.key === "ArrowRight") movePiece(1, 0);
-	else if (e.key === "ArrowDown") movePiece(0, 1);
-	else if (e.key === "ArrowUp") rotatePiece();
-	else if (e.code === "Space") hardDrop();
-	renderPiece();
+	if (e.key === "ArrowLeft") handleMovePiece(-1, 0);
+	else if (e.key === "ArrowRight") handleMovePiece(1, 0);
+	else if (e.key === "ArrowDown") handleMovePiece(0, 1);
+	else if (e.key === "ArrowUp") handleRotatePiece();
+	else if (e.code === "Space") handleHardDrop();
+}
+
+// ======== LOGIQUE DE JEU ========
+
+async function tick() {
+	const moved = await handleMovePiece(0, 1);
+
+	if (!moved)
+		await handleLockPiece();
 }
 
 function getIntervalDelay() {
-	// Exemple : diminue la vitesse de 50ms tous les 10 lignes, minimum 100ms
 	const baseSpeed = 500;
-	const speedup = Math.floor(lines.value / 10) * 50;
-	return Math.max(baseSpeed - speedup, 100); // minimum 100ms
+	const speedUp = math.floor(lines.value / 10) * 50;
+	return Math.max(baseSpeed, speedUp, 100);
 }
 
 function startInterval() {
-	if (intervalId.value !== null) clearInterval(intervalId.value);
+	if (intervalId.value !== null)
+		clearInterval(intervalId.value);
 
 	intervalId.value = setInterval(() => {
 		tick();
-		console.log(getIntervalDelay());
 	}, getIntervalDelay());
 }
 
 async function startGame() {
-	if (isGameRunning.value) return;
+	if (isGameRunning.value)
+		return;
 
 	window.addEventListener("keydown", handleKeyPress);
-
 	isGameRunning.value = true;
 
-	if (isPaused.value === false) {
+	if (!isPaused.value) {
 		activePiece.value = nextPiece.value;
 		nextPiece.value = await getNextTetromino();
 	}
 
 	isPaused.value = false;
-
 	startInterval();
-
-	renderNextPiece();
-	renderPiece();
 }
 
 function stopGame() {
@@ -289,13 +221,16 @@ function stopGame() {
 		clearInterval(intervalId.value);
 		intervalId.value = null;
 	}
+
 	window.removeEventListener("keydown", handleKeyPress);
 
 	if (gameOver.value)
 		router.push("/endgame");
 }
 
-onMounted(() => {
+// ======== INITIALISATION ========
+onMounted(async () => {
+	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 });
 </script>
@@ -313,6 +248,7 @@ onMounted(() => {
 			</div>
 
 			<div class="sidebar">
+				<div class="infos pixel-corners" id="lines">ICI LA</div>
 				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 				<div id="next-piece" class="infos pixel-corners next-piece-grid">
 					<div
