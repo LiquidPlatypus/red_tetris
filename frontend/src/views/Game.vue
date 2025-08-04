@@ -47,6 +47,10 @@ const flattenedNextPiece = computed(() => nextGrid.value.flat())
 
 // ======== FONCTION DECOMMUNICATION AVEC LE SOCKET ========
 
+/**
+ * @need Set the key word 'await' before the function for use it.
+ * @descristion Ask to server, who's the next Piece in bag
+ */
 async function getNextTetromino() {
 	return new Promise((resolve, reject) => {
 		socket.emit('get-piece');
@@ -224,8 +228,12 @@ function stopGame() {
 	window.removeEventListener("keydown", handleKeyPress);
 
 	if (gameOver.value)
-		router.push("/endgame");
+		socket.emit('finish', lines.value);
 }
+
+socket.on('game-finish', () => {
+	router.push("/endgame");
+});
 
 // ======== INITIALISATION ========
 onMounted(async () => {
