@@ -111,14 +111,15 @@ function createSeededRandom(seed) {
 
 /// GAME
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
+function getRandomInt(max = Number.MAX_SAFE_INTEGER) {
+  return Math.floor(Math.random() * Math.min(max, Number.MAX_SAFE_INTEGER));
 }
 
 export class Game {
     constructor(seed) {
         const players = new Map();
-        const bSeed = getRandomInt(9156165465466);
+        const bSeed = getRandomInt();
+        const random = createSeededRandom(bSeed);
 
         const instance = {
             getSeed: () => seed,
@@ -133,13 +134,13 @@ export class Game {
             },
             getPlayerList: () => players,
             refillBag: (bag) => {
-                const random = createSeededRandom(bSeed);
                 const indices = [...Array(TETROMINOS.length).keys()];
                 for (let i = indices.length -1; i > 0; i--) {
                     const j = Math.floor(random() * (i + 1));
                     [indices[i], indices[j]] = [indices[j], indices[i]];
                 }
                 bag.push(...indices);
+                console.log(indices);
             },
         };
 
