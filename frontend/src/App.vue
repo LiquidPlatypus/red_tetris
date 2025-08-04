@@ -1,6 +1,6 @@
 <script setup>
 import { RouterView } from "vue-router";
-import socket from "./socket";
+import socket from "./socket.js";
 
 socket.on("connect", () => {
 	console.log("🤠​ Connected !");
