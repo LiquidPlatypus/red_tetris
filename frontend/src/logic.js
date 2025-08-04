@@ -7,7 +7,7 @@
  * @param {number} dy - Déplacement vertical.
  * @returns {Object} - Nouvelle pièce avec la position mise à jour.
  */
-export function calculateNewPosition(piece, dx, dy) {
+function calculateNewPosition(piece, dx, dy) {
 	return {
 		...piece,
 		x: piece.x + dx,
@@ -20,7 +20,7 @@ export function calculateNewPosition(piece, dx, dy) {
  * @param {Object} piece - la pièce à faire tourner.
  * @returns {Object} - Nouvelle pièce.
  */
-export function calculateRotation(piece) {
+function calculateRotation(piece) {
 	const rotatedShape = piece.shape[0].map((_, colIndex) =>
 		piece.shape.map(row => row[colIndex]).reverse()
 	);
@@ -76,15 +76,17 @@ export function canPlacePieceAt(piece, permanentGrid, ROWS, COLS) {
  * @param {number} COLS - Nombre de colonnes.
  * @returns {Object} - Pièce avec la position finale.
  */
-export function calculateHardDropPosition(piece, permanentGrid, ROWS, COLS) {
+function calculateHardDropPosition(piece, permanentGrid, ROWS, COLS) {
 	let testPiece = { ...piece };
 
-	// Descendre jusqu'à ce qu'on ne puisse plus.
-	while (canPlacePieceAt(calculateNewPosition(testPiece, 0, 1), permanentGrid, ROWS, COLS))
-		testPiece = { ...piece };
+	// Descendre la pièce autant que possible
+	while (canPlacePieceAt(calculateNewPosition(testPiece, 0, 1), permanentGrid, ROWS, COLS)) {
+		testPiece = calculateNewPosition(testPiece, 0, 1);
+	}
 
 	return testPiece;
 }
+
 
 /**
  * @brief Calcule la nouvelle grille après avoir fixé la pièce.
@@ -92,9 +94,10 @@ export function calculateHardDropPosition(piece, permanentGrid, ROWS, COLS) {
  * @param {Object} piece - La pièce à fixer.
  * @param {number} ROWS - Nombre de lignes.
  * @param {number} COLS - Nombre de colonnes.
+ * @param {number} lines - Nombre de lignes cleared.
  * @returns {Object} - Nouvelle grille + nombre de lignes nettoyées.
  */
-export function calculateGridAfterLocking(permanentGrid, piece, ROWS, COLS) {
+export function calculateGridAfterLocking(permanentGrid, piece, ROWS, COLS, lines) {
 	// Créer une copie profonde de la grille.
 	const newGrid = permanentGrid.map(row => [...row]);
 	const { shape, x, y } = piece;
@@ -112,7 +115,7 @@ export function calculateGridAfterLocking(permanentGrid, piece, ROWS, COLS) {
 	});
 
 	// Calculer les lignes Complètes.
-	let linesCleared = 0;
+	let linesCleared = lines;
 	for (let i = ROWS - 1; i >= 0; i--) {
 		if (newGrid[i].every(cell => cell !== "empty")) {
 			newGrid.splice(i, 1);
@@ -237,10 +240,17 @@ export function attemptRotation(currentPiece, permanentGrid, ROWS, COLS) {
  * @returns {Object} - { success: boolean, newPiece: Object|null }
  */
 export function attemptHardDrop(currentPiece, permanentGrid, ROWS, COLS) {
-	const hardDroppedPiece = calculateHardDropPosition(currentPiece);
+	const hardDroppedPiece = calculateHardDropPosition(currentPiece, permanentGrid, ROWS, COLS);
 
-	if (canPlacePieceAt(hardDroppedPiece, permanentGrid, ROWS, COLS))
-		return { success: false, newPiece: hardDroppedPiece };
+	// Si on a bien bougé la pièce, c'est un succès
+	const success = (
+		hardDroppedPiece.y !== currentPiece.y
+		|| hardDroppedPiece.x !== currentPiece.x
+	);
 
-	return { success: false, newPiece: null };
+	return {
+		success,
+		newPiece: success ? hardDroppedPiece : null
+	};
 }
+

@@ -5,10 +5,7 @@ import {useRouter} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import {
-	calculateNewPosition,
-	calculateRotation,
 	canPlacePieceAt,
-	calculateHardDropPosition,
 	calculateGridAfterLocking,
 	calculateVisualGrid,
 	calculateNextPieceGrid,
@@ -118,10 +115,11 @@ async function handleHardDrop() {
 
 	if (droppedPiece.success) {
 		activePiece.value = droppedPiece.newPiece;
+		await handleLockPiece();
 		return true;
 	}
 
-	await handleLockPiece();
+	return false;
 }
 
 async function handleLockPiece() {
@@ -131,14 +129,15 @@ async function handleLockPiece() {
 	const { newGrid, linesCleared } = calculateGridAfterLocking(
 		permanentGrid.value,
 		activePiece.value,
-		ROWS, COLS
+		ROWS, COLS,
+		lines.value
 	);
 
 	permanentGrid.value = newGrid;
 	lines.value = linesCleared;
 
 	activePiece.value = nextPiece.value;
-	nextGrid.value = await getNextTetromino();
+	nextPiece.value = await getNextTetromino();
 
 	if (linesCleared > 0)
 		startInterval();
@@ -183,7 +182,7 @@ async function tick() {
 
 function getIntervalDelay() {
 	const baseSpeed = 500;
-	const speedUp = math.floor(lines.value / 10) * 50;
+	const speedUp = Math.floor(lines.value / 10) * 50;
 	return Math.max(baseSpeed, speedUp, 100);
 }
 
