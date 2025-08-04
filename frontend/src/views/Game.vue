@@ -247,7 +247,6 @@ onMounted(async () => {
 			</div>
 
 			<div class="sidebar">
-				<div class="infos pixel-corners" id="lines">ICI LA</div>
 				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 				<div id="next-piece" class="infos pixel-corners next-piece-grid">
 					<div
