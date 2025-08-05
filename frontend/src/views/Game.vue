@@ -45,7 +45,7 @@ const nextGrid = computed(() => {
 
 const flattenedNextPiece = computed(() => nextGrid.value.flat())
 
-// ======== FONCTION DECOMMUNICATION AVEC LE SOCKET ========
+// ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
 async function getNextTetromino() {
 	return new Promise((resolve, reject) => {
