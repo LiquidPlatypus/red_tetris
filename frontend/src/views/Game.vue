@@ -182,8 +182,8 @@ async function tick() {
 
 function getIntervalDelay() {
 	const baseSpeed = 500;
-	const speedUp = Math.floor(lines.value / 10) * 50;
-	return Math.max(baseSpeed, speedUp, 100);
+	const speedUp = Math.floor(lines.value / 1) * 50;
+	return Math.max(baseSpeed - speedUp, 100);
 }
 
 function startInterval() {
