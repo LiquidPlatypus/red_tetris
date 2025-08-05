@@ -141,7 +141,6 @@ export class Game {
 					[indices[i], indices[j]] = [indices[j], indices[i]];
 				}
 				bag.push(...indices);
-				console.log(indices);
 			},
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());
@@ -149,9 +148,8 @@ export class Game {
 				ranking.set(score, player);
 			},
 			gameStatus: () => {
-				for (let i = 0; players[i] != players.length; i++) {
-					const current = players[i];
-					if (current.getStatus() === true)
+				for (const value of players.values()) {
+					if (value.getStatus() == true)
 						return true;
 				}
 				return false;

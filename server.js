@@ -110,11 +110,11 @@ io.on('connection', (socket) => {
     });
 
     //End game :
-    socket.on('finish', (score) =>{
+    socket.on('finish', (score) => {
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), false, instance_player.getId());
         instance_game.rankPlayer(score, instance_player);
         console.log(instance_game.gameStatus());
-        if (instance_game.gameStatus() === false); // if not the last to finish: don't send ending signal
+        if (instance_game.gameStatus() === false) // if not the last to finish: don't send ending signal
             io.to(`${instance_game.getSeed()}`).emit('game-finish'); // io.to(seed).emit('game-finish')
         ; // [IN CLIENT] socket.emit('get ranking')
     });
