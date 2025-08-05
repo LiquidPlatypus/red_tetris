@@ -147,6 +147,7 @@ export class Game {
 				players.set(player.getId(), player);
 				ranking.set(score, player);
 			},
+			getRank: () => ranking,
 			gameStatus: () => {
 				for (const value of players.values()) {
 					if (value.getStatus() == true)

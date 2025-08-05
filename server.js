@@ -115,8 +115,16 @@ io.on('connection', (socket) => {
         instance_game.rankPlayer(score, instance_player);
         console.log(instance_game.gameStatus());
         if (instance_game.gameStatus() === false) // if not the last to finish: don't send ending signal
-            io.to(`${instance_game.getSeed()}`).emit('game-finish'); // io.to(seed).emit('game-finish')
-        ; // [IN CLIENT] socket.emit('get ranking')
+            io.to(`${instance_game.getSeed()}`).emit('game-finish');
+    });
+
+    socket.on('get-rank', () => {
+        const rank = instance_game.getRank();
+        const rank_list = Array.from(rank.entries()).map(([pScore, player]) => ({
+            score: pScore,
+            username: player.getUsername(),
+        }));
+        socket.emit('rank', rank_list);
     });
 
     /// DISCONNECTION PART

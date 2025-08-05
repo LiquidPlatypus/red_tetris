@@ -1,6 +1,13 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import socket from '@/socket';
+
+socket.emit('get-rank');
+
+socket.on('rank', (rank) => {
+	console.log(rank);
+});
 
 </script>
 
