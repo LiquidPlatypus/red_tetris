@@ -1,13 +1,21 @@
 <script setup>
-import { ref } from "vue";
 import { useRouter } from "vue-router";
+import AppButton from "@/components/AppButton.vue";
 
+const router = useRouter();
+
+function retry() {
+	router.push("/game");
+}
 </script>
 
 <template>
 	<main class="endgame">
 		<div class="game-over">
 			<h2>GAME OVER !</h2>
+
+			<!-- A ENLEVER -->
+			<AppButton @click="retry">RETRY</AppButton>
 		</div>
 
 		<RouterView />
