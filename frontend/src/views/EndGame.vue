@@ -4,10 +4,16 @@ import { useRouter } from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 
-socket.emit('get-rank');
+socket.on('game-finish', () => {
+	socket.emit('get-rank');
+});
 
 socket.on('rank', (rank) => {
 	console.log(rank);
+	const html = rank.map(({ score, username }) => {
+        return `<h1>[${score}] => ${username}</h1>`;
+    }).join('');
+	document.getElementById('result').innerHTML = html;
 });
 
 const router = useRouter();
@@ -22,13 +28,12 @@ function retry() {
 <template>
 	<main class="endgame">
 		<div class="game-over">
-			<div>
+			<div id="result">
 				<!-- TABLEAU -->
+				<h2>WAITING FOR OTHER PLAYERS TO FINISH
+					<span class="dot-typing"></span>
+				</h2>
 			</div>
-			<h2 v-if="!allPlayerFinished">WAITING FOR OTHER PLAYERS TO FINISH
-				<span class="dot-typing"></span>
-			</h2>
-			<h2 v-if="allPlayerFinished">GAME OVER !</h2>
 
 			<!-- A ENLEVER -->
 			<AppButton @click="retry">RETRY</AppButton>

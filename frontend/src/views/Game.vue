@@ -227,13 +227,15 @@ function stopGame() {
 
 	window.removeEventListener("keydown", handleKeyPress);
 
-	if (gameOver.value)
+	if (gameOver.value) {
 		socket.emit('finish', lines.value);
+		router.push("/endgame");
+	}
 }
 
-socket.on('game-finish', () => {
-	router.push("/endgame");
-});
+// socket.on('game-finish', () => {
+// 	router.push("/endgame");
+// });
 
 // ======== INITIALISATION ========
 onMounted(async () => {
