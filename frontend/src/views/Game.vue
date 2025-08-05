@@ -45,7 +45,7 @@ const nextGrid = computed(() => {
 
 const flattenedNextPiece = computed(() => nextGrid.value.flat())
 
-// ======== FONCTION DECOMMUNICATION AVEC LE SOCKET ========
+// ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
 /**
  * @need Set the key word 'await' before the function for use it.
@@ -186,8 +186,8 @@ async function tick() {
 
 function getIntervalDelay() {
 	const baseSpeed = 500;
-	const speedUp = Math.floor(lines.value / 10) * 50;
-	return Math.max(baseSpeed, speedUp, 100);
+	const speedUp = Math.floor(lines.value / 1) * 50;
+	return Math.max(baseSpeed - speedUp, 100);
 }
 
 function startInterval() {
@@ -255,7 +255,6 @@ onMounted(async () => {
 			</div>
 
 			<div class="sidebar">
-				<div class="infos pixel-corners" id="lines">ICI LA</div>
 				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 				<div id="next-piece" class="infos pixel-corners next-piece-grid">
 					<div
