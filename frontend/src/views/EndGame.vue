@@ -4,10 +4,6 @@ import { useRouter } from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 
-socket.on('game-finish', () => {
-	socket.emit('get-rank');
-});
-
 socket.on('rank', (rank) => {
 	console.log(rank);
 	const html = rank.map(({ score, username }) => {

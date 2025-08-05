@@ -101,14 +101,6 @@ new Piece(
 ),
 ]);
 
-function createSeededRandom(seed) {
-	let state = seed;
-	return function () {
-		state = (state * 1664525 + 1013904223) % 4294967296;
-		return state / 4294967296;
-	};
-}
-
 /// GAME
 
 function getRandomInt(max = Number.MAX_SAFE_INTEGER) {
@@ -119,8 +111,7 @@ export class Game {
 	constructor(seed) {
 		const players = new Map();
 		const ranking = new Map();
-		const bSeed = getRandomInt();
-		const random = createSeededRandom(bSeed);
+		const integer = getRandomInt();
 
 		const instance = {
 			getSeed: () => seed,
@@ -134,13 +125,15 @@ export class Game {
 				players.delete(player.getId());
 			},
 			getPlayerList: () => players,
-			refillBag: (bag) => {
+			getInteger: () => integer,
+			refillBag: (bag, random) => {
 				const indices = [...Array(TETROMINOS.length).keys()];
 				for (let i = indices.length -1; i > 0; i--) {
 					const j = Math.floor(random() * (i + 1));
 					[indices[i], indices[j]] = [indices[j], indices[i]];
 				}
 				bag.push(...indices);
+				console.log(indices);
 			},
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());

@@ -17,6 +17,14 @@ function getLocalIP() {
     }
 }
 
+function createSeededRandom(seed) {
+	let state = seed;
+	return function () {
+		state = (state * 1664525 + 1013904223) % 4294967296;
+		return state / 4294967296;
+	};
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -77,23 +85,13 @@ io.on('connection', (socket) => {
     socket.on('get-piece', () => {
         if (instance_game) {
             if (bag.length === 0)
-                instance_game.refillBag(bag);
+                instance_game.refillBag(bag, createSeededRandom(instance_game.getInteger()));
             const index = bag.shift();
             const tetromino = TETROMINOS[index];
             socket.emit('piece', {
                 shape: tetromino.getShape(),
                 x: tetromino.getX(),
                 y: tetromino.getY(),
-                color: tetromino.getColor(),
-            });
-        }
-    });
-
-    socket.on('target-piece', (index) => {
-        if (instance_game) {
-            const tetromino = TETROMINOS[index];
-            socket.emit('target', {
-                shape: tetromino.getShape(),
                 color: tetromino.getColor(),
             });
         }
@@ -113,17 +111,15 @@ io.on('connection', (socket) => {
     socket.on('finish', (score) => {
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), false, instance_player.getId());
         instance_game.rankPlayer(score, instance_player);
-        if (instance_game.gameStatus() === false) // if not the last to finish: don't send ending signal
-            io.to(`${instance_game.getSeed()}`).emit('game-finish');
-    });
-
-    socket.on('get-rank', () => {
-        const rank = instance_game.getRank();
-        const rank_list = Array.from(rank.entries()).map(([pScore, player]) => ({
-            score: pScore,
-            username: player.getUsername(),
-        }));
-        socket.emit('rank', rank_list);
+        // if not the last to finish: don't send ending signal
+        if (instance_game.gameStatus() === false) {
+            const rank = instance_game.getRank();
+            const rank_list = Array.from(rank.entries()).map(([pScore, player]) => ({
+                score: pScore,
+                username: player.getUsername(),
+            }));
+            io.to(`${instance_game.getSeed()}`).emit('rank', rank_list);
+        }
     });
 
     /// DISCONNECTION PART
