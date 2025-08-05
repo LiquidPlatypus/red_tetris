@@ -5,6 +5,7 @@ import AppButton from "@/components/AppButton.vue";
 
 const router = useRouter();
 
+// A ENLEVER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const allPlayerFinished = ref(false);
 
 function retry() {
