@@ -140,7 +140,6 @@ export class Game {
                     [indices[i], indices[j]] = [indices[j], indices[i]];
                 }
                 bag.push(...indices);
-                console.log(indices);
             },
         };
 
