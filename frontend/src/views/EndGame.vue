@@ -1,21 +1,23 @@
 <script setup>
-import {ref} from "vue";
-import { useRouter } from "vue-router";
+import {useRouter} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 
 socket.on('rank', (rank) => {
-	console.log(rank);
-	const html = rank.map(({ score, username }) => {
-        return `<h1>[${score}] => ${username}</h1>`;
-    }).join('');
-	document.getElementById('result').innerHTML = html;
+	document.getElementById("result").innerHTML = rank.map(({score, username}) => {
+		return `
+			<tr class="result-tab">
+				<th title="${username}">
+					${username}
+				</th>
+			</tr>
+			<tr>
+				<td>${score}</td>
+			</tr>
+	`}).join('');
 });
 
 const router = useRouter();
-
-// A ENLEVER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-const allPlayerFinished = ref(false);
 
 function retry() {
 	router.push("/game");
@@ -24,7 +26,7 @@ function retry() {
 
 <template>
 	<main class="endgame">
-		<div class="game-over">
+		<div id="game-over">
 			<div id="result">
 				<!-- TABLEAU -->
 				<h2>WAITING FOR OTHER PLAYERS TO FINISH
@@ -41,13 +43,20 @@ function retry() {
 </template>
 
 <style scoped>
-.game-over {
+main {
 	font-family: Pixel, sans-serif;
-	grid-column: 1 / 4;
-	grid-row: 5;
-	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#result {
 	color: red;
-	font-weight: bold;
+	text-align: center;
+}
+
+.result-tab {
+	border: 1px solid red;
 }
 
 .dot-typing {

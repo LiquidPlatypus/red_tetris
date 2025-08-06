@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import {ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
 import {useRouter} from "vue-router";
 
@@ -138,6 +138,8 @@ async function handleLockPiece() {
 	);
 
 	permanentGrid.value = newGrid;
+	socket.emit("grid", permanentGrid.value);
+
 	lines.value = linesCleared;
 
 	activePiece.value = nextPiece.value;
@@ -233,14 +235,16 @@ function stopGame() {
 	}
 }
 
-// socket.on('game-finish', () => {
-// 	router.push("/endgame");
-// });
-
 // ======== INITIALISATION ========
 onMounted(async () => {
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
+});
+
+onUnmounted(async () => {
+	lines.value = 0;
+	gameOver.value = false;
+	permanentGrid.value = Array(COLS).fill("empty");
 });
 </script>
 
