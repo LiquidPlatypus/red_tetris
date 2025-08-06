@@ -8,7 +8,6 @@ socket.on('game-finish', () => {
 });
 
 socket.on('rank', (rank) => {
-	console.log(rank);
 	document.getElementById("result").innerHTML = rank.map(({score, username}) => {
 		return `
 			<tr class="result-tab">
