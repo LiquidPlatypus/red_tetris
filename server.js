@@ -131,8 +131,6 @@ io.on('connection', (socket) => {
             io.to(`${seed}`).emit('launch-game');
             console.log(`${seed} game launched now !`);
         }
-        else
-            console.log('nop');
     });
 
     //End game :
@@ -154,10 +152,12 @@ io.on('connection', (socket) => {
 
     socket.on('return', () => {
         clearPlayer(instance_game, instance_player);
+        socket.leave(instance_game.getSeed());
     });
     socket.on('disconnect', () => {
         console.log('Client left the game.');
         clearPlayer(instance_game, instance_player);
+        socket.leave(instance_game.getSeed());
     });
     socket.on('refreshme', () => {
         if (instance_game) {
