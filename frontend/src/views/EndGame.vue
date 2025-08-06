@@ -8,18 +8,26 @@ socket.on('game-finish', () => {
 });
 
 socket.on('rank', (rank) => {
-	document.getElementById("result").innerHTML = rank.map(({score, username}) => {
-		return `
-			<tr class="result-tab">
-				<th title="${username}">
-					${username}
-				</th>
-			</tr>
-			<tr>
-				<td>${score}</td>
-			</tr>
-	`}).join('');
+	document.getElementById("result").innerHTML = `
+		<table id="result-tab">
+			<thead class="table-head">
+				<tr>
+					<th>Username</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody>
+				${rank.map(({score, username}) => `
+					<tr>
+						<td title="${username}">${username}</td>
+						<td>${score}</td>
+					</tr>
+				`).join('')}
+			</tbody>
+		</table>
+	`;
 });
+
 
 const router = useRouter();
 
@@ -39,7 +47,7 @@ function retry() {
 			</div>
 
 			<!-- A ENLEVER -->
-			<AppButton @click="retry">RETRY</AppButton>
+			<AppButton class="retry" @click="retry">RETRY</AppButton>
 		</div>
 
 		<RouterView />
@@ -49,18 +57,62 @@ function retry() {
 <style scoped>
 main {
 	font-family: Pixel, sans-serif;
+}
+
+#game-over {
+	background-color: #214132;
+	border-top: 15px solid #3365ff;
+	border-left: 5px solid lightgray;
+	border-right: 10px solid lightgray;
+	border-bottom: 10px solid lightgray;
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	align-items: center;
+	gap: 5px;
+	position: relative;
+	box-shadow: 2px 2px black;
 }
 
-#result {
+#game-over::before {
+	content: "";
+	position: absolute;
+	top: -15px; /* pour aligner avec le border-top */
+	left: -4.5px; /* dépassement à gauche */
+	width: calc(100% + 9px); /* dépassement à droite aussi */
+	height: 15px; /* même hauteur que ton border-top */
+	background-color: blue; /* même couleur que ton border-top */
+	border-top: 3px solid lightgrey;
+	border-bottom: 2px solid lightgrey;
+	border-left: 3px solid lightgrey;
+	border-right: 3px solid lightgrey;
+	box-sizing: border-box;
+}
+
+h2 {
 	color: red;
-	text-align: center;
 }
 
-.result-tab {
+.retry {
+	width: 75%;
+}
+
+::v-deep(.table-head) {
+	background-color: darkolivegreen;
+	color: blue;
+	border: 3px red solid;
+}
+
+::v-deep(#result-tab) {
 	border: 1px solid red;
+	color: yellow;
+	border-collapse: collapse;
+}
+
+::v-deep(#result-tab th),
+::v-deep(#result-tab td) {
+	border: 1px solid red;
+	padding: 8px;
 }
 
 .dot-typing {
