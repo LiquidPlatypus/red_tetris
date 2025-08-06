@@ -127,6 +127,7 @@ export class Game {
 	constructor(seed) {
 		const players = new Map();
 		const ranking = new Map();
+		const grids = new Map();
 		const integer = getRandomInt();
 
 		const instance = {
@@ -155,11 +156,25 @@ export class Game {
 				}
 				return false;
 			},
+			getGridList: (except_player = undefined) => {
+				if (except_player !== undefined) {
+					return new Map( [...grids.entries()].filter(([, value]) => value.getId() !== except_player.getId()) );
+				} else {
+					return grids;
+				}
+			},
+			addGrid: (player, grid) => {
+				grids.set(grid, player);
+			},
 		};
 
 		return instance;
 	}
 };
+
+//   return new Map(
+//     [...myMap.entries()].filter(([key, value]) => key !== keyToRemove)
+//   );
 
 export const addGame = (game) => {
 	console.log(`${game.getSeed()}: game added`);

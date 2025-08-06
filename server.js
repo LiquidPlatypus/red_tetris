@@ -103,6 +103,25 @@ io.on('connection', (socket) => {
                 y: tetromino.getY(),
                 color: tetromino.getColor(),
             });
+        } else {
+            socket.emit('error', 'game not exist');
+        }
+    });
+    socket.on('grid', (value) => {
+        if (instance_game) {
+            instance_game.addGrid(instance_player, value);
+        } else {
+            socket.emit('error', 'game not exist');
+        }
+    });
+    socket.on('get-grids', () => {
+        if (instance_game) {
+            const grids = instance_game.getGridList(instance_player);
+            const grid_list = Array.from(grids.entries()).map(([grid, player]) => ({
+                grid: grid,
+                username: player.getUsername(),
+            }));
+            socket.emit('grids', grid_list);
         }
     });
 
