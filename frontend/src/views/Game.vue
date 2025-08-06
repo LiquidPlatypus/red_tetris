@@ -71,6 +71,25 @@ async function getNextTetromino() {
 		setTimeout(() => reject("Timeout getting piece"), 1000);
 	});
 }
+/**
+ * @need Set the key word 'await' before the function for use it.
+ * @description Ask to server for get every grid of player in this game
+ * @content Map contain: Key[".grid"] / Value[".username"]
+ * @warning If the grid of other player is empty, return undefined
+ */
+async function getUserGrid() {
+	return new Promise((resolve, reject) => {
+		socket.emit('get-grids');
+
+		socket.once('grids', (grids) => {
+			if (grids.length === 0)
+				resolve(undefined);
+			resolve(grids);
+		});
+
+		setTimeout(() => reject("Timeout getting grids"), 1000);
+	});
+}
 
 // ======== ACTIONS UTILISATEUR ========
 

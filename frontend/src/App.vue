@@ -9,6 +9,16 @@ socket.on("connect", () => {
 socket.on("disconnect", () => {
 	console.log("😵​ Disconnected.");
 });
+
+socket.on('refresh-player', () => {
+	socket.emit('refreshme');
+});
+
+socket.on('error', (message) => {
+	console.error(message);
+	router.push('/');
+});
+
 </script>
 
 <template>

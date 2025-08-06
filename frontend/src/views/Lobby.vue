@@ -17,17 +17,9 @@ if (seed && username) {
 socket.on('client-join', (username) => {
 	console.log(`${username} join the game.`);
 });
-socket.on('error', (message) => {
-	console.error(message);
-	router.push('/');
-});
 
 socket.on('launch-game', () => {
 	router.push('/game');
-});
-
-socket.on('refresh-player', () => {
-	socket.emit('refreshme');
 });
 
 function createGame() {

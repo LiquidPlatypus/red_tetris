@@ -101,12 +101,20 @@ new Piece(
 ),
 ]);
 
-function createSeededRandom(seed) {
+export function createSeededRandom(seed) {
 	let state = seed;
 	return function () {
 		state = (state * 1664525 + 1013904223) % 4294967296;
 		return state / 4294967296;
 	};
+}
+export function refillBag(bag, random) {
+	const indices = [...Array(TETROMINOS.length).keys()];
+	for (let i = indices.length -1; i > 0; i--) {
+		const j = Math.floor(random() * (i + 1));
+		[indices[i], indices[j]] = [indices[j], indices[i]];
+	}
+	bag.push(...indices);
 }
 
 /// GAME
@@ -119,8 +127,8 @@ export class Game {
 	constructor(seed) {
 		const players = new Map();
 		const ranking = new Map();
-		const bSeed = getRandomInt();
-		const random = createSeededRandom(bSeed);
+		const grids = new Map();
+		const integer = getRandomInt();
 
 		const instance = {
 			getSeed: () => seed,
@@ -134,14 +142,7 @@ export class Game {
 				players.delete(player.getId());
 			},
 			getPlayerList: () => players,
-			refillBag: (bag) => {
-				const indices = [...Array(TETROMINOS.length).keys()];
-				for (let i = indices.length -1; i > 0; i--) {
-					const j = Math.floor(random() * (i + 1));
-					[indices[i], indices[j]] = [indices[j], indices[i]];
-				}
-				bag.push(...indices);
-			},
+			getInteger: () => integer,
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());
 				players.set(player.getId(), player);
@@ -155,11 +156,25 @@ export class Game {
 				}
 				return false;
 			},
+			getGridList: (except_player = undefined) => {
+				if (except_player !== undefined) {
+					return new Map( [...grids.entries()].filter(([, value]) => value.getId() !== except_player.getId()) );
+				} else {
+					return grids;
+				}
+			},
+			addGrid: (player, grid) => {
+				grids.set(grid, player);
+			},
 		};
 
 		return instance;
 	}
 };
+
+//   return new Map(
+//     [...myMap.entries()].filter(([key, value]) => key !== keyToRemove)
+//   );
 
 export const addGame = (game) => {
 	console.log(`${game.getSeed()}: game added`);
