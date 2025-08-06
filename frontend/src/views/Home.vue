@@ -53,6 +53,8 @@ input::placeholder {
 }
 
 .pseudo-input {
+	font-family: Pixel, sans-serif;
+	font-size: 15px;
 	border-left: #5454541a solid 3px;
 	border-top: #5454541a solid 3px;
 	border-right: #5454547a solid 3px;
