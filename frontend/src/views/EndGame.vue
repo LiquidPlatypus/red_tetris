@@ -74,8 +74,8 @@ main {
 	content: "";
 	position: absolute;
 	top: -15px; /* pour aligner avec le border-top */
-	left: -4.5px; /* dépassement à gauche */
-	width: calc(100% + 9px); /* dépassement à droite aussi */
+	left: -4.7px; /* dépassement à gauche */
+	width: calc(100% + 15px); /* dépassement à droite aussi */
 	height: 15px; /* même hauteur que ton border-top */
 	background-color: blue; /* même couleur que ton border-top */
 	border-top: 3px solid lightgrey;
