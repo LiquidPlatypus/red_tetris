@@ -17,7 +17,7 @@ function getLocalIP() {
     }
 }
 function clearPlayer(instance_game, instance_player) {
-    if (instance_game.getSeed() !== '') {
+    if (instance_game && instance_game.getSeed() !== '') {
         instance_game.removePlayer(instance_player);
         const player_list = instance_game.getPlayerList();
         if (player_list.size === 0)
@@ -76,6 +76,8 @@ io.on('connection', (socket) => {
 
     // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
+        if (username === undefined && instance_player.getUsername() === '')
+            socket.emit('error', 'Username missing in URL');
         instance_game = getGame(seed);
         if (instance_game !== undefined) {
             random = createSeededRandom(instance_game.getInteger());
@@ -84,7 +86,7 @@ io.on('connection', (socket) => {
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
         } else {
-            socket.emit('error', 'game not exist');
+            socket.emit('error', 'Game not exist');
         }
     });
 

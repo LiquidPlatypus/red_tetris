@@ -10,9 +10,8 @@ const seed = route.params.seed;
 const username = route.params.username;
 console.log('Lobby join !');
 
-if (seed && username) {
+if (seed && username)
 	socket.emit('join-user', { seed, username });
-}
 
 socket.on('client-join', (username) => {
 	console.log(`${username} join the game.`);
@@ -25,10 +24,6 @@ socket.on('launch-game', () => {
 function createGame() {
 	socket.emit('launch-game', seed);
 }
-
-onUnmounted(() => {
-	;
-});
 
 </script>
 
