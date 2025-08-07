@@ -25,24 +25,31 @@ const isPaused = ref(false);
 const lines = ref(0);
 const intervalId = ref(null);
 
-// Grille principale (quand les pieces se fixent).
-const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
-
 // Pièces actives.
 const activePiece = ref(null);
 const nextPiece = ref(null);
 
+// Grille principale (quand les pieces se fixent).
+const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
 const visualGrid = computed(() => {
 	return calculateVisualGrid(permanentGrid.value, activePiece.value);
 });
-
 const flattenedGrid = computed(() => visualGrid.value.flat());
 
+// Grille pour les autres joueurs.
+const otherPlayersGrids = ref({});
+const flattenedOtherPlayers = computed(() => {
+	return Object.entries(otherPlayersGrids.value).map(([username, grid]) => ({
+		username,
+		flattened: grid.flat(),
+	}));
+});
+
+// Grille pour la prochaine pièce.
 const nextGrid = computed(() => {
 	return calculateNextPieceGrid(nextPiece.value, 4);
 });
-
 const flattenedNextPiece = computed(() => nextGrid.value.flat())
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
@@ -71,6 +78,13 @@ async function getNextTetromino() {
 		setTimeout(() => reject("Timeout getting piece"), 1000);
 	});
 }
+
+async function fetchOtherPlayerGrids() {
+	const grids = await getUserGrid();
+	if (grids)
+		otherPlayersGrids.vaue = grids;
+}
+
 /**
  * @need Set the key word 'await' before the function for use it.
  * @description Ask to server for get every grid of player in this game
@@ -217,6 +231,7 @@ function startInterval() {
 
 	intervalId.value = setInterval(() => {
 		tick();
+		fetchOtherPlayerGrids();
 	}, getIntervalDelay());
 }
 
@@ -269,6 +284,22 @@ onUnmounted(async () => {
 
 <template>
 	<main class="game">
+		<div id="other-players" class="tetris-grid">
+			<div
+				v-for="{ username, flattened } in flattenedOtherPlayers"
+				:key="username"
+				class="tetris-grid other-player-grid"
+			>
+				<div class="username">{{ username }}</div>
+				<div
+					v-for="(cell, index) in flattened"
+					:key="index"
+					:class="cell"
+					class="cell"
+				></div>
+			</div>
+		</div>
+
 		<div id="game-container">
 			<div id="game-zone" class="tetris-grid">
 				<div
@@ -290,19 +321,16 @@ onUnmounted(async () => {
 					></div>
 				</div>
 			</div>
+
+			<div class="pause-overlay" v-if="isPaused">
+				PAUSE
+			</div>
 		</div>
 
 		<div class="controls">
 			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
-		</div>
-
-		<div class="pause-overlay" v-if="isPaused">
-			PAUSE
-		</div>
-
-		<div v-if="gameOver" class="game-over">
-			<h2>GAME OVER !</h2>
+			<!-- AJOUTER LES CONTROLES -->
 		</div>
 
 		<RouterView />
@@ -396,10 +424,52 @@ main {
 	text-align: center;
 }
 
+#other-players {
+	background-color: #214132;
+	border-top: 15px solid #3365ff;
+	border-left: 5px solid lightgrey;
+	border-right: 5px solid lightgrey;
+	border-bottom: 10px solid lightgrey;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: flex-start;
+	align-self: flex-start;
+	gap: 0.5rem;
+	position: relative;
+	margin-top: 0.5rem;
+	margin-left: 5rem;
+	box-shadow: 2px 2px black;
+}
+
+#other-players::before {
+	content: "";
+	position: absolute;
+	top: -15px; /* pour aligner avec le border-top */
+	left: -4.5px; /* dépassement à gauche */
+	width: calc(100% + 9px); /* dépassement à droite aussi */
+	height: 15px; /* même hauteur que ton border-top */
+	background-color: blue; /* même couleur que ton border-top */
+	border-top: 3px solid lightgrey;
+	border-bottom: 2px solid lightgrey;
+	border-left: 3px solid lightgrey;
+	border-right: 3px solid lightgrey;
+	box-sizing: border-box;
+}
+
+.other-player-grid {
+	margin: 0.5rem;
+}
+.username {
+	text-align: center;
+	font-weight: bold;
+	margin-bottom: 0.3rem;
+}
+
 .pause-overlay {
 	position: absolute;
 	top: 48%;
-	left: 45.2%;
+	left: 31.5%;
 	transform: translate(-50%, -50%);
 	font-size: 2rem;
 	font-weight: bold;
