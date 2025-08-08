@@ -1,4 +1,5 @@
 <script setup>
+import { onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
@@ -9,10 +10,8 @@ const seed = route.params.seed;
 const username = route.params.username;
 console.log('Lobby join !');
 
-if (seed && username) {
-	console.log('HERE');
+if (seed && username)
 	socket.emit('join-user', { seed, username });
-}
 
 socket.on('client-join', (username) => {
 	console.log(`${username} join the game.`);
@@ -25,6 +24,7 @@ socket.on('launch-game', () => {
 function createGame() {
 	socket.emit('launch-game', seed);
 }
+
 </script>
 
 <template>

@@ -16,10 +16,6 @@ function createLobby() {
 socket.on('lobby-join', (seed) => {
 	router.push(`/${seed}`);
 });
-socket.on('error', (message) => {
-	console.error(message);
-	window.alert(message);
-});
 
 </script>
 

@@ -1,6 +1,8 @@
 <script setup>
-import { RouterView } from "vue-router";
+import { RouterView, useRouter } from "vue-router";
 import socket from "./socket.js";
+
+const router = useRouter();
 
 socket.on("connect", () => {
 	console.log("🤠​ Connected !");
@@ -16,16 +18,21 @@ socket.on('refresh-player', () => {
 
 socket.on('error', (message) => {
 	console.error(message);
+	window.alert(message);
 	router.push('/');
 });
+
+function clickTitle() {
+	socket.emit('return');
+}
 
 </script>
 
 <template>
 	<div id="app">
 		<div>
-			<router-link to="/" class="no-underline">
-				<h1 class="title cursor-pointer">OK.TRIS</h1>
+			<router-link to="/">
+				<h1 class="title cursor-pointer" @click="clickTitle" >OK.TRIS</h1>
 			</router-link>
 		</div>
 		<router-view />

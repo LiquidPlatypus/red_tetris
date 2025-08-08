@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
-import {useRouter} from "vue-router";
+import {useRouter, onBeforeRouteLeave} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import {
@@ -290,7 +290,25 @@ onUnmounted(async () => {
 	lines.value = 0;
 	gameOver.value = false;
 	permanentGrid.value = Array(COLS).fill("empty");
+	if (!gameOver.value)
+		socket.emit('return');
 });
+
+// onBeforeRouteLeave((to, from, next) => {
+// 	if (!gameOver.value) {
+// 		stopGame();
+// 		const answer = window.confirm('Leave the game ?');
+// 		if (answer) {
+// 			next();
+// 		} else {
+// 			startGame();
+// 			next(false);
+// 		}
+// 	}
+// 	else
+// 		next();
+// });
+
 </script>
 
 <template>
