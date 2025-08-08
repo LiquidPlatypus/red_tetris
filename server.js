@@ -76,16 +76,16 @@ io.on('connection', (socket) => {
 
     // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
-        if (username === undefined && instance_player.getUsername() === '')
-            socket.emit('error', 'Username missing in URL');
         instance_game = getGame(seed);
-        if (instance_game !== undefined) {
+        if (instance_game && instance_player.getUsername() === '') {
             random = createSeededRandom(instance_game.getInteger());
             instance_player = new Player(username, false, true, socket.id);
             io.to(`${seed}`).emit('client-join', instance_player.getUsername());
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
-        } else {
+        } else if (!username && instance_player.getUsername() === '') {
+            socket.emit('error', 'Username missing in URL');
+        } else if (!instance_game) {
             socket.emit('error', 'Game not exist');
         }
     });
@@ -155,11 +155,17 @@ io.on('connection', (socket) => {
     socket.on('return', () => {
         clearPlayer(instance_game, instance_player);
         socket.leave(instance_game.getSeed());
+        instance_player = new Player('', false, false, socket.id);
+        instance_game = new Game('');
     });
     socket.on('disconnect', () => {
         console.log('Client left the game.');
-        clearPlayer(instance_game, instance_player);
-        socket.leave(instance_game.getSeed());
+        if (instance_game && instance_player) {
+            clearPlayer(instance_game, instance_player);
+            socket.leave(instance_game.getSeed());
+            instance_player = new Player('', false, false, socket.id);
+            instance_game = new Game('');
+        }
     });
     socket.on('refreshme', () => {
         if (instance_game) {

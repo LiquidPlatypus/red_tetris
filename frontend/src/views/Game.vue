@@ -268,20 +268,20 @@ onUnmounted(async () => {
 		socket.emit('return');
 });
 
-onBeforeRouteLeave((to, from, next) => {
-	if (!gameOver.value) {
-		stopGame();
-		const answer = window.confirm('Leave the game ?');
-		if (answer) {
-			next();
-		} else {
-			startGame();
-			next(false);
-		}
-	} else {
-		next();
-	}
-});
+// onBeforeRouteLeave((to, from, next) => {
+// 	if (!gameOver.value) {
+// 		stopGame();
+// 		const answer = window.confirm('Leave the game ?');
+// 		if (answer) {
+// 			next();
+// 		} else {
+// 			startGame();
+// 			next(false);
+// 		}
+// 	}
+// 	else
+// 		next();
+// });
 
 </script>
 

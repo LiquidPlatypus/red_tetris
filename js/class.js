@@ -164,6 +164,7 @@ export class Game {
 				}
 			},
 			addGrid: (player, grid) => {
+				grids.delete(grid);
 				grids.set(grid, player);
 			},
 		};
