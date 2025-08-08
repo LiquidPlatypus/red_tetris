@@ -164,7 +164,12 @@ export class Game {
 				}
 			},
 			addGrid: (player, grid) => {
-				grids.delete(grid);
+				for (const [key, value] of grids.entries()) {
+					if (value.getId() !== player.getId()) {
+						grids.delete(key);
+						break;
+					}
+				}
 				grids.set(grid, player);
 			},
 		};
