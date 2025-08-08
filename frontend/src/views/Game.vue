@@ -80,9 +80,19 @@ async function getNextTetromino() {
 }
 
 async function fetchOtherPlayerGrids() {
-	const grids = await getUserGrid();
-	if (grids)
-		otherPlayersGrids.vaue = grids;
+
+	try {
+		const grids = await getUserGrid();
+		if (grids) {
+			const processedGrids = {};
+			for (const [username, grid] of Object.entries(grids))
+				processedGrids[username] = grid;
+			otherPlayersGrids.value = processedGrids;
+			console.log(otherPlayersGrids.value);
+		}
+	} catch (error) {
+		console.error("Error during grid fetch:", error);
+	}
 }
 
 /**
@@ -273,6 +283,7 @@ function stopGame() {
 onMounted(async () => {
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
+	await fetchOtherPlayerGrids();
 });
 
 onUnmounted(async () => {
@@ -284,53 +295,78 @@ onUnmounted(async () => {
 
 <template>
 	<main class="game">
-		<div id="other-players" class="tetris-grid">
-			<div
-				v-for="{ username, flattened } in flattenedOtherPlayers"
-				:key="username"
-				class="tetris-grid other-player-grid"
-			>
-				<div class="username">{{ username }}</div>
+		<div class="game-layout">
+			<!-- Grilles des autres joueurs à gauche -->
+			<div class="other-players left-players">
 				<div
-					v-for="(cell, index) in flattened"
-					:key="index"
-					:class="cell"
-					class="cell"
-				></div>
-			</div>
-		</div>
-
-		<div id="game-container">
-			<div id="game-zone" class="tetris-grid">
-				<div
-					v-for="(cell, index) in flattenedGrid"
-					:key="index"
-					:class="cell"
-					class="cell"
-				></div>
-			</div>
-
-			<div class="sidebar">
-				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
-				<div id="next-piece" class="infos pixel-corners next-piece-grid">
-					<div
-						v-for="(cell_next_piece, index) in flattenedNextPiece"
-						:key="index"
-						:class="cell_next_piece"
-						class="cell_next_piece"
-					></div>
+					v-for="{ username, flattened } in flattenedOtherPlayers"
+					:key="username"
+					class="other-player-container"
+				>
+					<div class="username">{{ username }}</div>
+					<div class="tetris-grid other-player-grid">
+						<div
+							v-for="(cell, cellIndex) in flattened"
+							:key="cellIndex"
+							:class="cell"
+							class="cell small-cell"
+						></div>
+					</div>
 				</div>
 			</div>
 
-			<div class="pause-overlay" v-if="isPaused">
-				PAUSE
+			<!-- Terrain principal -->
+			<div id="game-container">
+				<div id="game-zone" class="tetris-grid">
+					<div
+						v-for="(cell, index) in flattenedGrid"
+						:key="index"
+						:class="cell"
+						class="cell"
+					></div>
+				</div>
+
+				<div class="sidebar">
+					<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
+					<div id="next-piece" class="infos pixel-corners next-piece-grid">
+						<div
+							v-for="(cell_next_piece, index) in flattenedNextPiece"
+							:key="index"
+							:class="cell_next_piece"
+							class="cell_next_piece"
+						></div>
+					</div>
+				</div>
+
+				<div class="pause-overlay" v-if="isPaused">
+					PAUSE
+				</div>
+			</div>
+
+			<!-- Grilles des autres joueurs à droite -->
+			<div class="other-players right-players">
+				<div
+					v-for="{ username, flattened } in flattenedOtherPlayers"
+					:key="username"
+					class="other-player-container"
+				>
+					<div class="username">{{ username }}</div>
+					<div class="tetris-grid other-player-grid">
+						<div
+							v-for="(cell, cellIndex) in flattened"
+							:key="cellIndex"
+							:class="cell"
+							class="cell small-cell"
+						></div>
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<div class="controls">
 			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
-			<!-- AJOUTER LES CONTROLES -->
+			<!-- AJOUTER CONTROLES -->
 		</div>
 
 		<RouterView />
@@ -344,6 +380,47 @@ main {
 	flex-direction: column;
 	align-items: center;
 	padding: 20px;
+}
+
+.game-layout {
+	display: flex;
+	align-items: flex-start;
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.other-players {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	min-width: 120px;
+}
+
+.other-player-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.username {
+	text-align: center;
+	font-weight: bold;
+	margin-bottom: 5px;
+	font-size: 12px;
+	color: #214132;
+}
+
+.other-player-grid {
+	grid-template-columns: repeat(10, 10px) !important;
+	grid-template-rows: repeat(20, 10px) !important;
+	background-color: #88ac28;
+	border: 1px solid #214132;
+}
+
+.small-cell {
+	width: 10px !important;
+	height: 10px !important;
+	border: 0.5px solid darkolivegreen;
 }
 
 #game-container {
@@ -364,11 +441,11 @@ main {
 #game-container::before {
 	content: "";
 	position: absolute;
-	top: -15px; /* pour aligner avec le border-top */
-	left: -4.5px; /* dépassement à gauche */
-	width: calc(100% + 9px); /* dépassement à droite aussi */
-	height: 15px; /* même hauteur que ton border-top */
-	background-color: blue; /* même couleur que ton border-top */
+	top: -15px;
+	left: -4.5px;
+	width: calc(100% + 9px);
+	height: 15px;
+	background-color: blue;
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
 	border-left: 3px solid lightgrey;
@@ -434,11 +511,8 @@ main {
 	flex-direction: row;
 	justify-content: center;
 	align-items: flex-start;
-	align-self: flex-start;
 	gap: 0.5rem;
 	position: relative;
-	margin-top: 0.5rem;
-	margin-left: 5rem;
 	box-shadow: 2px 2px black;
 }
 
@@ -460,6 +534,7 @@ main {
 .other-player-grid {
 	margin: 0.5rem;
 }
+
 .username {
 	text-align: center;
 	font-weight: bold;
