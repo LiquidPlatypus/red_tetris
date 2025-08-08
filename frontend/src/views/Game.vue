@@ -1,7 +1,7 @@
 <script setup>
 import {ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
-import {useRouter, onBeforeRouteLeave} from "vue-router";
+import {useRouter} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import {
@@ -40,9 +40,9 @@ const flattenedGrid = computed(() => visualGrid.value.flat());
 // Grille pour les autres joueurs.
 const otherPlayersGrids = ref({});
 const flattenedOtherPlayers = computed(() => {
-	return Object.entries(otherPlayersGrids.value).map(([username, grid]) => ({
-		username,
-		flattened: grid.flat(),
+	return Object.entries(otherPlayersGrids.value).map(([key, playerData]) => ({
+		username: playerData.username,
+		flattened: playerData.grid.flat(),
 	}));
 });
 
@@ -80,15 +80,11 @@ async function getNextTetromino() {
 }
 
 async function fetchOtherPlayerGrids() {
-
 	try {
 		const grids = await getUserGrid();
 		if (grids) {
-			const processedGrids = {};
-			for (const [username, grid] of Object.entries(grids))
-				processedGrids[username] = grid;
-			otherPlayersGrids.value = processedGrids;
-			console.log(otherPlayersGrids.value);
+			otherPlayersGrids.value = grids;
+			console.log("Grilles des autres joueurs:", otherPlayersGrids.value);
 		}
 	} catch (error) {
 		console.error("Error during grid fetch:", error);
@@ -106,7 +102,7 @@ async function getUserGrid() {
 		socket.emit('get-grids');
 
 		socket.once('grids', (grids) => {
-			if (grids.length === 0)
+			if (!grids || Object.keys(grids).length === 0)
 				resolve(undefined);
 			resolve(grids);
 		});
@@ -284,30 +280,27 @@ onMounted(async () => {
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 	await fetchOtherPlayerGrids();
+
+	socket.on('grid-update', (updatedGrids) => {
+		otherPlayersGrids.value = updatedGrids;
+	});
+
+	const gridUpdateInterval = setInterval(() => {
+		if (!gameOver.value)
+			fetchOtherPlayerGrids();
+	}, getIntervalDelay());
+
+	onUnmounted(() => {
+		clearInterval(gridUpdateInterval);
+		socket.off('grid-update');
+	});
 });
 
 onUnmounted(async () => {
 	lines.value = 0;
 	gameOver.value = false;
 	permanentGrid.value = Array(COLS).fill("empty");
-	if (!gameOver.value)
-		socket.emit('return');
 });
-
-// onBeforeRouteLeave((to, from, next) => {
-// 	if (!gameOver.value) {
-// 		stopGame();
-// 		const answer = window.confirm('Leave the game ?');
-// 		if (answer) {
-// 			next();
-// 		} else {
-// 			startGame();
-// 			next(false);
-// 		}
-// 	}
-// 	else
-// 		next();
-// });
 
 </script>
 
@@ -519,7 +512,7 @@ main {
 	text-align: center;
 }
 
-#other-players {
+.other-players {
 	background-color: #214132;
 	border-top: 15px solid #3365ff;
 	border-left: 5px solid lightgrey;
@@ -534,7 +527,7 @@ main {
 	box-shadow: 2px 2px black;
 }
 
-#other-players::before {
+.other-players::before {
 	content: "";
 	position: absolute;
 	top: -15px; /* pour aligner avec le border-top */
