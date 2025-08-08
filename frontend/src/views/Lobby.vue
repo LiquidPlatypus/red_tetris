@@ -10,7 +10,8 @@ const seed = route.params.seed;
 const username = route.params.username;
 console.log('Lobby join !');
 
-socket.emit('join-user', { seed, username });
+if (seed && username)
+	socket.emit('join-user', { seed, username });
 
 socket.on('client-join', (username) => {
 	console.log(`${username} join the game.`);

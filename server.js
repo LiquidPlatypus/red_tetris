@@ -85,7 +85,7 @@ io.on('connection', (socket) => {
             instance_game.addPlayer(instance_player);
         } else if (!username && instance_player.getUsername() === '') {
             socket.emit('error', 'Username missing in URL');
-        } else if (!instance_game) {
+        } else {
             socket.emit('error', 'Game not exist');
         }
     });
