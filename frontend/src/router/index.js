@@ -13,12 +13,6 @@ const router = createRouter({
 			component: Home,
 		},
 		{
-			path: '/:seed',
-			name: 'Lobby',
-			component: Lobby,
-			props: true,
-		},
-		{
 			path: '/:seed/:username',
 			name: 'LobbyJoin',
 			component: () => import('@/views/Lobby.vue'),

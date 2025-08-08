@@ -13,8 +13,8 @@ function createLobby() {
 	socket.emit('create-lobby', pseudo.value);
 }
 
-socket.on('lobby-join', (seed) => {
-	router.push(`/${seed}`);
+socket.on('lobby-join', (info) => {
+	router.push(`/${info.Seed}/${info.Username}`);
 });
 
 </script>
