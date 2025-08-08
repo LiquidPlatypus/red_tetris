@@ -165,7 +165,7 @@ export class Game {
 			},
 			addGrid: (player, grid) => {
 				for (const [key, value] of grids.entries()) {
-					if (value.getId() !== player.getId()) {
+					if (value.getId() === player.getId()) {
 						grids.delete(key);
 						break;
 					}
