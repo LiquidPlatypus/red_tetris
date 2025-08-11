@@ -414,11 +414,15 @@ main {
 }
 
 .username {
+	position: relative;
+	top: -16px;
+	left: -30px;
 	text-align: center;
 	font-weight: bold;
 	margin-bottom: 5px;
 	font-size: 12px;
-	color: #214132;
+	color: white;
+;
 }
 
 .other-player-grid {
@@ -533,7 +537,7 @@ main {
 	top: -15px; /* pour aligner avec le border-top */
 	left: -4.5px; /* dépassement à gauche */
 	width: calc(100% + 9px); /* dépassement à droite aussi */
-	height: 15px; /* même hauteur que ton border-top */
+	height: 17px; /* même hauteur que ton border-top */
 	background-color: blue; /* même couleur que ton border-top */
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
