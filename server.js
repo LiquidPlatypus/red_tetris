@@ -54,21 +54,20 @@ io.on('connection', (socket) => {
     let instance_player = new Player('', false, false, socket.id);
     let instance_game = new Game('');
     const bag = [];
-    let random;
+    let random; // mettre le createSeededRandom chelou ici pour TEST l'erreur avec random
 
     // client click on create-game button :
     socket.on('create-lobby', (username) => {
         let seed = username + '_room';
         if (getGame(seed) === undefined) {
             instance_game = new Game(seed);
-            random = createSeededRandom(instance_game.getInteger());
             addGame(instance_game);
             instance_player = new Player(username, true, true, instance_player.getId());
             console.log(`${seed} created !`);
-            io.to(`${seed}`).emit('client-join', instance_player.getUsername());
-            socket.join(`${seed}`);
-            instance_game.addPlayer(instance_player);
-            socket.emit('lobby-join', seed); // return seed to client for URL in router
+            socket.emit('lobby-join', {
+                Seed: seed,
+                Username: username,
+            });
         } else {
             socket.emit('error', 'username already exist');
         }
@@ -77,16 +76,17 @@ io.on('connection', (socket) => {
     // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
         instance_game = getGame(seed);
-        if (instance_game && instance_player.getUsername() === '') {
+        if (!instance_game)
+            socket.emit('error', 'Game not exist');
+        if (instance_game.getCurrent() === false) {
             random = createSeededRandom(instance_game.getInteger());
-            instance_player = new Player(username, false, true, socket.id);
+            if (instance_player && instance_player.getUsername() === '')
+                instance_player = new Player(username, false, true, socket.id);
             io.to(`${seed}`).emit('client-join', instance_player.getUsername());
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
-        } else if (!username && instance_player.getUsername() === '') {
-            socket.emit('error', 'Username missing in URL');
         } else {
-            socket.emit('error', 'Game not exist');
+            socket.emit('error', 'La partie est en cours chef !')
         }
     });
 
@@ -132,6 +132,7 @@ io.on('connection', (socket) => {
         if (instance_player.getHost() === true) {
             io.to(`${seed}`).emit('launch-game');
             console.log(`${seed} game launched now !`);
+            instance_game.setCurrent(true);
         }
     });
 
@@ -153,10 +154,12 @@ io.on('connection', (socket) => {
     /// DISCONNECTION PART
 
     socket.on('return', () => {
-        clearPlayer(instance_game, instance_player);
-        socket.leave(instance_game.getSeed());
-        instance_player = new Player('', false, false, socket.id);
-        instance_game = new Game('');
+        if (instance_game) {
+            clearPlayer(instance_game, instance_player);
+            socket.leave(instance_game.getSeed());
+            instance_player = new Player('', false, false, socket.id);
+            instance_game = new Game('');
+        }
     });
     socket.on('disconnect', () => {
         console.log('Client left the game.');

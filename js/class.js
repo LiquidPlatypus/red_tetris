@@ -108,7 +108,7 @@ export function createSeededRandom(seed) {
 		return state / 4294967296;
 	};
 }
-export function refillBag(bag, random) {
+export function refillBag(bag, random = createSeededRandom(8945464646464646445)) {
 	const indices = [...Array(TETROMINOS.length).keys()];
 	for (let i = indices.length -1; i > 0; i--) {
 		const j = Math.floor(random() * (i + 1));
@@ -129,9 +129,14 @@ export class Game {
 		const ranking = new Map();
 		const grids = new Map();
 		const integer = getRandomInt();
+		let current = false;
 
 		const instance = {
 			getSeed: () => seed,
+			getCurrent: () => current,
+			setCurrent: (value) => {
+				current = value;
+			},
 			addPlayer: (player) => {
 				players.set(player.getId(), player);
 			},
