@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
     let instance_player = new Player('', false, false, socket.id);
     let instance_game = new Game('');
     const bag = [];
-    let random;
+    let random; // mettre le createSeededRandom chelou ici pour TEST l'erreur avec random
 
     // client click on create-game button :
     socket.on('create-lobby', (username) => {

@@ -13,8 +13,14 @@ const router = createRouter({
 			component: Home,
 		},
 		{
-			path: '/:seed/:username',
+			path: '/:seed',
 			name: 'LobbyJoin',
+			component: () => import('@/views/BeforeRoom.vue'),
+			props: true,
+		},
+		{
+			path: '/:seed/:username',
+			name: 'Lobby',
 			component: () => import('@/views/Lobby.vue'),
 			props: true,
 		},
