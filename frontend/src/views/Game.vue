@@ -19,6 +19,13 @@ const router = useRouter();
 const ROWS = 20;
 const COLS = 10;
 
+const positions = [
+	{class: "top-left"},
+	{class: "top-right"},
+	{class: "bottom-left"},
+	{class: "bottom-right"},
+]
+
 const isGameRunning = ref(false);
 const gameOver = ref(false);
 const isPaused = ref(false);
@@ -307,23 +314,29 @@ onUnmounted(async () => {
 <template>
 	<main class="game">
 		<div class="game-layout">
-			<!-- Grilles des autres joueurs à gauche -->
-			<div class="other-players left-players">
-				<div
-					v-for="{ username, flattened } in flattenedOtherPlayers"
-					:key="username"
-					class="other-player-container"
-				>
-					<div class="username">{{ username }}</div>
+			<div
+				v-for="(pos, index) in positions"
+				:key="pos.class"
+				class="other-players"
+				:class="pos.class"
+			>
+				<!-- Si le joueur existe -->
+				<template v-if="flattenedOtherPlayers[index]">
+					<div class="username">{{ flattenedOtherPlayers[index].username }}</div>
 					<div class="tetris-grid other-player-grid">
 						<div
-							v-for="(cell, cellIndex) in flattened"
+							v-for="(cell, cellIndex) in flattenedOtherPlayers[index].flattened"
 							:key="cellIndex"
 							:class="cell"
 							class="cell small-cell"
 						></div>
 					</div>
-				</div>
+				</template>
+
+				<!-- Si pas encore de joueur -->
+				<template v-else>
+					<div class="placeholder">En attente...</div>
+				</template>
 			</div>
 
 			<!-- Terrain principal -->
@@ -353,25 +366,6 @@ onUnmounted(async () => {
 					PAUSE
 				</div>
 			</div>
-
-			<!-- Grilles des autres joueurs à droite -->
-			<div class="other-players right-players">
-				<div
-					v-for="{ username, flattened } in flattenedOtherPlayers"
-					:key="username"
-					class="other-player-container"
-				>
-					<div class="username">{{ username }}</div>
-					<div class="tetris-grid other-player-grid">
-						<div
-							v-for="(cell, cellIndex) in flattened"
-							:key="cellIndex"
-							:class="cell"
-							class="cell small-cell"
-						></div>
-					</div>
-				</div>
-			</div>
 		</div>
 
 		<div class="controls">
@@ -394,23 +388,19 @@ main {
 }
 
 .game-layout {
-	display: flex;
-	align-items: flex-start;
-	gap: 20px;
-	margin-bottom: 20px;
-}
-
-.other-players {
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
-	min-width: 120px;
-}
-
-.other-player-container {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	gap: 10px;
 	align-items: center;
+	justify-items: center;
+}
+
+.placeholder {
+	color: #999;
+	font-style: italic;
+	font-size: 0.9rem;
+	margin-top: 50px;
 }
 
 .username {
@@ -451,6 +441,7 @@ main {
 	gap: 0.5rem;
 	position: relative;
 	box-shadow: 2px 2px black;
+	grid-area: 1 / 2 / 3 / 3;
 }
 
 #game-container::before {
@@ -526,7 +517,6 @@ main {
 	flex-direction: row;
 	justify-content: center;
 	align-items: flex-start;
-	gap: 0.5rem;
 	position: relative;
 	box-shadow: 2px 2px black;
 }
@@ -551,6 +541,9 @@ main {
 }
 
 .username {
+	position: relative;
+	top: -16px;
+	left: 2px;
 	text-align: center;
 	font-weight: bold;
 	margin-bottom: 0.3rem;
