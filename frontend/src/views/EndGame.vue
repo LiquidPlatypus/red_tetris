@@ -1,7 +1,12 @@
 <script setup>
-import {useRouter} from "vue-router";
+import { onBeforeUnmount, ref, onMounted } from "vue";
+import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
+import { askServer } from "@/utils";
+
+const seed = ref('');
+const username = ref('');
 
 socket.on('rank', (rank) => {
 	document.getElementById("result").innerHTML = rank.map(({score, username}) => {
@@ -20,8 +25,41 @@ socket.on('rank', (rank) => {
 const router = useRouter();
 
 function retry() {
-	router.push("/game");
+	socket.emit('return-lobby');
+	socket.once('get-value', (seed, username) => {
+		router.push(`/${seed}/${username}`);
+	});
 }
+
+onBeforeRouteLeave(async (to, from, next) => {
+	const allowedPaths = ['/'];
+	if (allowedPaths.includes(to.path) || await askServer(to.path, socket) === true) {
+		next();
+		return;
+	}
+	const confirmLeave = window.confirm("Return menu ?");
+	if (confirmLeave) {
+		next();
+		socket.emit('return');
+		router.push('/');
+	} else {
+		next(false);
+	}
+});
+
+function handleBeforeUnload(event) {
+	event.preventDefault();
+}
+
+onMounted(async () => {
+	if (await askServer('game-exist', socket) === false)
+		router.push('/');
+	window.addEventListener("beforeunload", handleBeforeUnload);
+});
+onBeforeUnmount(() => {
+	window.removeEventListener("beforeunload", handleBeforeUnload);
+});
+
 </script>
 
 <template>
@@ -35,7 +73,7 @@ function retry() {
 			</div>
 
 			<!-- A ENLEVER -->
-			<AppButton @click="retry">RETRY</AppButton>
+			<AppButton @click="retry">RETURN LOBBY</AppButton>
 		</div>
 
 		<RouterView />

@@ -20,6 +20,7 @@ function clearPlayer(instance_game, instance_player) {
     if (instance_game && instance_game.getSeed() !== '') {
         instance_game.removePlayer(instance_player);
         const player_list = instance_game.getPlayerList();
+        io.to(`${instance_game.getSeed()}`).emit('server-log', `${instance_player.getUsername()} left the game !`);
         if (player_list.size === 0)
             removeGame(instance_game);
         else if (instance_player.getHost() === true) {
@@ -50,7 +51,6 @@ app.get('/:room/:username', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('Client join the game.');
     let instance_player = new Player('', false, false, socket.id);
     let instance_game = new Game('');
     const bag = [];
@@ -78,11 +78,11 @@ io.on('connection', (socket) => {
         instance_game = getGame(seed);
         if (!instance_game)
             socket.emit('error', 'Game not exist');
-        if (instance_game.getCurrent() === false) {
+        else if (instance_game.getCurrent() === false) {
             random = createSeededRandom(instance_game.getInteger());
             if (instance_player && instance_player.getUsername() === '')
                 instance_player = new Player(username, false, true, socket.id);
-            io.to(`${seed}`).emit('client-join', instance_player.getUsername());
+            io.to(`${seed}`).emit('server-log', `${instance_player.getUsername()} join the game !`);
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
         } else {
@@ -92,6 +92,7 @@ io.on('connection', (socket) => {
 
     /// GAME SERVER INFO    
 
+    // Getter and Setter
     socket.on('get-piece', () => {
         if (instance_game) {
             if (bag.length === 0) {
@@ -127,6 +128,20 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('ask-server', (signal) => {
+        if (signal === 'game-exist') {
+            if (instance_game && instance_game.getSeed() === '')
+                socket.emit('response', false);
+            else
+                socket.emit('response', true);
+        }
+        if (signal === `/${instance_game.getSeed()}/${instance_player.getUsername()}`) {
+            socket.emit('response', true);
+            return;
+        }
+        else if (signal === 'line-complete') {}
+    });
+
     // when host click on launch game :
     socket.on('launch-game', (seed) => {
         if (instance_player.getHost() === true) {
@@ -151,6 +166,11 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('return-lobby', () => {
+        instance_game.setCurrent(false);
+        socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
+    });
+
     /// DISCONNECTION PART
 
     socket.on('return', () => {
@@ -162,7 +182,6 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('disconnect', () => {
-        console.log('Client left the game.');
         if (instance_game && instance_player) {
             clearPlayer(instance_game, instance_player);
             socket.leave(instance_game.getSeed());
