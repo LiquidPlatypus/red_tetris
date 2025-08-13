@@ -38,6 +38,8 @@ const nextPiece = ref(null);
 
 // Grille principale (quand les pieces se fixent).
 const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
+socket.emit("grid", permanentGrid.value);
+
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
 const visualGrid = computed(() => {
 	return calculateVisualGrid(permanentGrid.value, activePiece.value);
@@ -47,10 +49,14 @@ const flattenedGrid = computed(() => visualGrid.value.flat());
 // Grille pour les autres joueurs.
 const otherPlayersGrids = ref({});
 const flattenedOtherPlayers = computed(() => {
-	return Object.entries(otherPlayersGrids.value).map(([key, playerData]) => ({
-		username: playerData.username,
-		flattened: playerData.grid.flat(),
-	}));
+	return Object.values(otherPlayersGrids.value)
+		.filter(playerData => playerData && playerData.username)
+		.map(playerData => ({
+			username: playerData.username,
+			flattened: playerData.grid
+				? playerData.grid.flat()
+				: Array(ROWS * COLS).fill("empty")
+		}));
 });
 
 // Grille pour la prochaine pièce.
@@ -315,28 +321,20 @@ onUnmounted(async () => {
 	<main class="game">
 		<div class="game-layout">
 			<div
-				v-for="(pos, index) in positions"
-				:key="pos.class"
+				v-for="(player, index) in flattenedOtherPlayers"
+				:key="player.username"
 				class="other-players"
-				:class="pos.class"
+				:class="positions[index]?.class"
 			>
-				<!-- Si le joueur existe -->
-				<template v-if="flattenedOtherPlayers[index]">
-					<div class="username">{{ flattenedOtherPlayers[index].username }}</div>
-					<div class="tetris-grid other-player-grid">
-						<div
-							v-for="(cell, cellIndex) in flattenedOtherPlayers[index].flattened"
-							:key="cellIndex"
-							:class="cell"
-							class="cell small-cell"
-						></div>
-					</div>
-				</template>
-
-				<!-- Si pas encore de joueur -->
-				<template v-else>
-					<div class="placeholder">En attente...</div>
-				</template>
+				<div class="username">{{ player.username }}</div>
+				<div class="tetris-grid other-player-grid">
+					<div
+						v-for="(cell, cellIndex) in player.flattened"
+						:key="cellIndex"
+						:class="cell"
+						class="cell small-cell"
+					></div>
+				</div>
 			</div>
 
 			<!-- Terrain principal -->
@@ -513,10 +511,6 @@ main {
 	border-left: 5px solid lightgrey;
 	border-right: 5px solid lightgrey;
 	border-bottom: 10px solid lightgrey;
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: flex-start;
 	position: relative;
 	box-shadow: 2px 2px black;
 }
@@ -524,11 +518,11 @@ main {
 .other-players::before {
 	content: "";
 	position: absolute;
-	top: -15px; /* pour aligner avec le border-top */
-	left: -4.5px; /* dépassement à gauche */
-	width: calc(100% + 9px); /* dépassement à droite aussi */
-	height: 17px; /* même hauteur que ton border-top */
-	background-color: blue; /* même couleur que ton border-top */
+	top: -15px;
+	left: -4.5px;
+	width: calc(100% + 9px);
+	height: 17px;
+	background-color: blue;
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
 	border-left: 3px solid lightgrey;
@@ -544,7 +538,7 @@ main {
 	position: relative;
 	top: -16px;
 	left: 2px;
-	text-align: center;
+	text-align: left;
 	font-weight: bold;
 	margin-bottom: 0.3rem;
 }
