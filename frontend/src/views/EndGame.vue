@@ -80,10 +80,12 @@ onBeforeUnmount(() => {
 				</h2>
 			</div>
 
-			<!-- A ENLEVER -->
-			<AppButton @click="retry">RETURN LOBBY</AppButton>
+			<div class="window-title">Results</div>
 		</div>
 
+		<div class="controls">
+			<AppButton @click="retry">RETURN LOBBY</AppButton>
+		</div>
 		<RouterView />
 	</main>
 </template>
@@ -91,6 +93,10 @@ onBeforeUnmount(() => {
 <style scoped>
 main {
 	font-family: Pixel, sans-serif;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
 }
 
 #game-over {
@@ -103,7 +109,6 @@ main {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	gap: 5px;
 	position: relative;
 	box-shadow: 2px 2px black;
 }
@@ -123,12 +128,22 @@ main {
 	box-sizing: border-box;
 }
 
-h2 {
-	color: red;
+.window-title {
+	position: relative;
+	top: -143.5px;
+	left: -46px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 12px;
+	color: white;
 }
 
-.retry {
-	width: 75%;
+.controls {
+	margin-top: 0.5rem;
+}
+
+h2 {
+	color: red;
 }
 
 ::v-deep(.table-head) {
