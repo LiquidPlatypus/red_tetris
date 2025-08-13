@@ -271,6 +271,13 @@ async function startGame() {
 	startInterval();
 }
 
+async function hostStart() {
+	await askServer('start-game', socket);
+}
+socket.on('launch', () => {
+	startGame();
+});
+
 function stopGame() {
 	isGameRunning.value = false;
 	if (!gameOver.value)
@@ -391,8 +398,7 @@ onBeforeUnmount(() => {
 		</div>
 
 		<div class="controls">
-			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
-			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
+			<AppButton v-if="!isGameRunning && !gameOver" @click="hostStart">START GAME</AppButton>
 			<!-- AJOUTER CONTROLES -->
 		</div>
 

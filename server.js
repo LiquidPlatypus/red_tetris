@@ -144,6 +144,10 @@ io.on('connection', (socket) => {
             socket.emit('response', instance_player.getUsername());
             return;
         }
+        if (signal === 'start-game') {
+            if (instance_player.getHost())
+                io.to(`${instance_game.getSeed()}`).emit('launch');
+        }
         if (signal === 'line-complete') {}
     });
 
