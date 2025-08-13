@@ -163,17 +163,19 @@ io.on('connection', (socket) => {
         // if not the last to finish: don't send ending signal
         if (instance_game.gameStatus() === false) {
             const rank = instance_game.getRank();
-            const rank_list = Array.from(rank.entries()).map(([pScore, player]) => ({
+            const rank_list = Array.from(rank.entries()).map(([pID, pScore]) => ({
                 score: pScore,
-                username: player.getUsername(),
+                username: instance_game.getPlayer(pID).getUsername(),
             }));
-            console.log(`rank list : ${rank_list}`);
             io.to(`${instance_game.getSeed()}`).emit('rank', rank_list);
         }
     });
 
     socket.on('return-lobby', () => {
-        instance_game.setCurrent(false);
+        if (instance_game.getCurrent() === true)
+            instance_game.setCurrent(false);
+        instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
+        instance_game.removeRank(instance_player);
         socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
     });
 

@@ -151,7 +151,12 @@ export class Game {
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());
 				players.set(player.getId(), player);
-				ranking.set(score, player);
+				ranking.set(player.getId(), score);
+			},
+			removeRank: (player) => {
+				ranking.delete(player.getId());
+				players.delete(player.getId());
+				players.set(player.getId(), player);
 			},
 			getRank: () => ranking,
 			gameStatus: () => {
