@@ -148,7 +148,6 @@ io.on('connection', (socket) => {
             if (instance_player.getHost())
                 io.to(`${instance_game.getSeed()}`).emit('launch');
         }
-        if (signal === 'line-complete') {}
     });
 
     // when host click on launch game :
