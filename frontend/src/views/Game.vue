@@ -27,6 +27,12 @@ const positions = [
 	{class: "bottom-right"},
 ]
 
+const username = ref('');
+
+askServer('get-username', socket).then((res) => {
+	username.value = res;
+});
+
 const isGameRunning = ref(false);
 const gameOver = ref(false);
 const isPaused = ref(false);
@@ -304,7 +310,7 @@ function handleBeforeUnload(event) {
 
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
-		router.push('/');
+		await router.push('/');
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
@@ -379,6 +385,7 @@ onBeforeUnmount(() => {
 					></div>
 				</div>
 
+				<div class="username">{{ username }}</div>
 				<div class="sidebar">
 					<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 					<div id="next-piece" class="infos pixel-corners next-piece-grid">
@@ -419,28 +426,24 @@ main {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	grid-template-rows: repeat(2, 1fr);
-	gap: 10px;
+	row-gap: 25px;
 	align-items: center;
 	justify-items: center;
-}
-
-.placeholder {
-	color: #999;
-	font-style: italic;
-	font-size: 0.9rem;
-	margin-top: 50px;
 }
 
 .username {
 	position: relative;
 	top: -16px;
-	left: -30px;
+	left: -27px;
 	text-align: center;
 	font-weight: bold;
-	margin-bottom: 5px;
 	font-size: 12px;
 	color: white;
-;
+}
+
+#game-container .username {
+	top: -16.5px;
+	left: -208.5px;
 }
 
 .other-player-grid {
@@ -448,6 +451,7 @@ main {
 	grid-template-rows: repeat(20, 10px) !important;
 	background-color: #88ac28;
 	border: 1px solid #214132;
+	margin: 0.2rem;
 }
 
 .small-cell {
@@ -494,6 +498,11 @@ main {
 	grid-template-rows: repeat(20, 20px);
 	border-top: 2px solid black;
 	border-left: 2px solid black;
+}
+
+.tetris-grid.other-player-grid {
+	border-top: 1.5px solid black;
+	border-left: 1.5px solid black;
 }
 
 .cell {
@@ -558,19 +567,6 @@ main {
 	border-left: 3px solid lightgrey;
 	border-right: 3px solid lightgrey;
 	box-sizing: border-box;
-}
-
-.other-player-grid {
-	margin: 0.5rem;
-}
-
-.username {
-	position: relative;
-	top: -16px;
-	left: 2px;
-	text-align: left;
-	font-weight: bold;
-	margin-bottom: 0.3rem;
 }
 
 .pause-overlay {
