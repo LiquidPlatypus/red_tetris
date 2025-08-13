@@ -140,6 +140,10 @@ io.on('connection', (socket) => {
             socket.emit('response', true);
             return;
         }
+        if (signal === 'get-username') {
+            socket.emit('response', instance_player.getUsername());
+            return;
+        }
         if (signal === 'line-complete') {}
     });
 
@@ -163,6 +167,7 @@ io.on('connection', (socket) => {
                 score: pScore,
                 username: player.getUsername(),
             }));
+            console.log(`rank list : ${rank_list}`);
             io.to(`${instance_game.getSeed()}`).emit('rank', rank_list);
         }
     });
