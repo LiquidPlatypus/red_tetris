@@ -1,7 +1,7 @@
 <script setup>
 import {onBeforeUnmount, ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
-import {useRouter, onBeforeRouteLeave} from "vue-router";
+import {useRouter} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import { askServer } from "../utils.js";
@@ -20,30 +20,50 @@ const router = useRouter();
 const ROWS = 20;
 const COLS = 10;
 
+const positions = [
+	{class: "top-left"},
+	{class: "top-right"},
+	{class: "bottom-left"},
+	{class: "bottom-right"},
+]
+
 const isGameRunning = ref(false);
 const gameOver = ref(false);
 const isPaused = ref(false);
 const lines = ref(0);
 const intervalId = ref(null);
 
-// Grille principale (quand les pieces se fixent).
-const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
-
 // Pièces actives.
 const activePiece = ref(null);
 const nextPiece = ref(null);
+
+// Grille principale (quand les pieces se fixent).
+const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
+socket.emit("grid", permanentGrid.value);
 
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
 const visualGrid = computed(() => {
 	return calculateVisualGrid(permanentGrid.value, activePiece.value);
 });
-
 const flattenedGrid = computed(() => visualGrid.value.flat());
 
+// Grille pour les autres joueurs.
+const otherPlayersGrids = ref({});
+const flattenedOtherPlayers = computed(() => {
+	return Object.values(otherPlayersGrids.value)
+		.filter(playerData => playerData && playerData.username)
+		.map(playerData => ({
+			username: playerData.username,
+			flattened: playerData.grid
+				? playerData.grid.flat()
+				: Array(ROWS * COLS).fill("empty")
+		}));
+});
+
+// Grille pour la prochaine pièce.
 const nextGrid = computed(() => {
 	return calculateNextPieceGrid(nextPiece.value, 4);
 });
-
 const flattenedNextPiece = computed(() => nextGrid.value.flat())
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
@@ -72,6 +92,19 @@ async function getNextTetromino() {
 		setTimeout(() => reject("Timeout getting piece"), 1000);
 	});
 }
+
+async function fetchOtherPlayerGrids() {
+	try {
+		const grids = await getUserGrid();
+		if (grids) {
+			otherPlayersGrids.value = grids;
+			console.log("Grilles des autres joueurs:", otherPlayersGrids.value);
+		}
+	} catch (error) {
+		console.error("Error during grid fetch:", error);
+	}
+}
+
 /**
  * @need Set the key word 'await' before the function for use it.
  * @description Ask to server for get every grid of player in this game
@@ -83,7 +116,7 @@ async function getUserGrid() {
 		socket.emit('get-grids');
 
 		socket.once('grids', (grids) => {
-			if (grids.length === 0)
+			if (!grids || Object.keys(grids).length === 0)
 				resolve(undefined);
 			resolve(grids);
 		});
@@ -218,6 +251,7 @@ function startInterval() {
 
 	intervalId.value = setInterval(() => {
 		tick();
+		fetchOtherPlayerGrids();
 	}, getIntervalDelay());
 }
 
@@ -267,6 +301,16 @@ onMounted(async () => {
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
+	await fetchOtherPlayerGrids();
+
+	const gridUpdateInterval = setInterval(() => {
+		if (!gameOver.value)
+			fetchOtherPlayerGrids();
+	}, getIntervalDelay());
+
+	onUnmounted(() => {
+		clearInterval(gridUpdateInterval);
+	});
 });
 
 onUnmounted(async () => {
@@ -299,25 +343,49 @@ onBeforeUnmount(() => {
 
 <template>
 	<main class="game">
-		<div id="game-container">
-			<div id="game-zone" class="tetris-grid">
-				<div
-					v-for="(cell, index) in flattenedGrid"
-					:key="index"
-					:class="cell"
-					class="cell"
-				></div>
+		<div class="game-layout">
+			<div
+				v-for="(player, index) in flattenedOtherPlayers"
+				:key="player.username"
+				class="other-players"
+				:class="positions[index]?.class"
+			>
+				<div class="username">{{ player.username }}</div>
+				<div class="tetris-grid other-player-grid">
+					<div
+						v-for="(cell, cellIndex) in player.flattened"
+						:key="cellIndex"
+						:class="cell"
+						class="cell small-cell"
+					></div>
+				</div>
 			</div>
 
-			<div class="sidebar">
-				<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
-				<div id="next-piece" class="infos pixel-corners next-piece-grid">
+			<!-- Terrain principal -->
+			<div id="game-container">
+				<div id="game-zone" class="tetris-grid">
 					<div
-						v-for="(cell_next_piece, index) in flattenedNextPiece"
+						v-for="(cell, index) in flattenedGrid"
 						:key="index"
-						:class="cell_next_piece"
-						class="cell_next_piece"
+						:class="cell"
+						class="cell"
 					></div>
+				</div>
+
+				<div class="sidebar">
+					<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
+					<div id="next-piece" class="infos pixel-corners next-piece-grid">
+						<div
+							v-for="(cell_next_piece, index) in flattenedNextPiece"
+							:key="index"
+							:class="cell_next_piece"
+							class="cell_next_piece"
+						></div>
+					</div>
+				</div>
+
+				<div class="pause-overlay" v-if="isPaused">
+					PAUSE
 				</div>
 			</div>
 		</div>
@@ -325,14 +393,7 @@ onBeforeUnmount(() => {
 		<div class="controls">
 			<AppButton v-if="!isGameRunning && !gameOver" @click="startGame">START GAME</AppButton>
 			<AppButton v-if="isGameRunning" @click="stopGame">PAUSE</AppButton>
-		</div>
-
-		<div class="pause-overlay" v-if="isPaused">
-			PAUSE
-		</div>
-
-		<div v-if="gameOver" class="game-over">
-			<h2>GAME OVER !</h2>
+			<!-- AJOUTER CONTROLES -->
 		</div>
 
 		<RouterView />
@@ -348,6 +409,47 @@ main {
 	padding: 20px;
 }
 
+.game-layout {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	gap: 10px;
+	align-items: center;
+	justify-items: center;
+}
+
+.placeholder {
+	color: #999;
+	font-style: italic;
+	font-size: 0.9rem;
+	margin-top: 50px;
+}
+
+.username {
+	position: relative;
+	top: -16px;
+	left: -30px;
+	text-align: center;
+	font-weight: bold;
+	margin-bottom: 5px;
+	font-size: 12px;
+	color: white;
+;
+}
+
+.other-player-grid {
+	grid-template-columns: repeat(10, 10px) !important;
+	grid-template-rows: repeat(20, 10px) !important;
+	background-color: #88ac28;
+	border: 1px solid #214132;
+}
+
+.small-cell {
+	width: 10px !important;
+	height: 10px !important;
+	border: 0.5px solid darkolivegreen;
+}
+
 #game-container {
 	background-color: #214132;
 	border-top: 15px solid #3365ff;
@@ -361,16 +463,17 @@ main {
 	gap: 0.5rem;
 	position: relative;
 	box-shadow: 2px 2px black;
+	grid-area: 1 / 2 / 3 / 3;
 }
 
 #game-container::before {
 	content: "";
 	position: absolute;
-	top: -15px; /* pour aligner avec le border-top */
-	left: -4.5px; /* dépassement à gauche */
-	width: calc(100% + 9px); /* dépassement à droite aussi */
-	height: 15px; /* même hauteur que ton border-top */
-	background-color: blue; /* même couleur que ton border-top */
+	top: -15px;
+	left: -4.5px;
+	width: calc(100% + 9px);
+	height: 15px;
+	background-color: blue;
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
 	border-left: 3px solid lightgrey;
@@ -426,10 +529,48 @@ main {
 	text-align: center;
 }
 
+.other-players {
+	background-color: #214132;
+	border-top: 15px solid #3365ff;
+	border-left: 5px solid lightgrey;
+	border-right: 5px solid lightgrey;
+	border-bottom: 10px solid lightgrey;
+	position: relative;
+	box-shadow: 2px 2px black;
+}
+
+.other-players::before {
+	content: "";
+	position: absolute;
+	top: -15px;
+	left: -4.5px;
+	width: calc(100% + 9px);
+	height: 17px;
+	background-color: blue;
+	border-top: 3px solid lightgrey;
+	border-bottom: 2px solid lightgrey;
+	border-left: 3px solid lightgrey;
+	border-right: 3px solid lightgrey;
+	box-sizing: border-box;
+}
+
+.other-player-grid {
+	margin: 0.5rem;
+}
+
+.username {
+	position: relative;
+	top: -16px;
+	left: 2px;
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 0.3rem;
+}
+
 .pause-overlay {
 	position: absolute;
 	top: 48%;
-	left: 45.2%;
+	left: 31.5%;
 	transform: translate(-50%, -50%);
 	font-size: 2rem;
 	font-weight: bold;
