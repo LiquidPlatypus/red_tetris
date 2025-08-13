@@ -27,6 +27,12 @@ const positions = [
 	{class: "bottom-right"},
 ]
 
+const username = ref('');
+
+askServer('get-username', socket).then((res) => {
+	username.value = res;
+});
+
 const isGameRunning = ref(false);
 const gameOver = ref(false);
 const isPaused = ref(false);
@@ -297,7 +303,7 @@ function handleBeforeUnload(event) {
 
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
-		router.push('/');
+		await router.push('/');
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
@@ -372,6 +378,7 @@ onBeforeUnmount(() => {
 					></div>
 				</div>
 
+				<div class="username">{{ username }}</div>
 				<div class="sidebar">
 					<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
 					<div id="next-piece" class="infos pixel-corners next-piece-grid">
@@ -421,12 +428,16 @@ main {
 .username {
 	position: relative;
 	top: -16px;
-	left: -20px;
+	left: -27px;
 	text-align: center;
 	font-weight: bold;
 	font-size: 12px;
 	color: white;
-;
+}
+
+#game-container .username {
+	top: -16.5px;
+	left: -208.5px;
 }
 
 .other-player-grid {
