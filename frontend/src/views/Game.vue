@@ -1,9 +1,10 @@
 <script setup>
-import {ref, computed, onMounted, onUnmounted} from "vue";
+import {onBeforeUnmount, ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
-import {useRouter} from "vue-router";
+import {useRouter, onBeforeRouteLeave} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
+import { askServer } from "../utils.js";
 import {
 	canPlacePieceAt,
 	calculateGridAfterLocking,
@@ -289,9 +290,17 @@ function stopGame() {
 }
 
 // ======== INITIALISATION ========
+
+function handleBeforeUnload(event) {
+	event.preventDefault();
+}
+
 onMounted(async () => {
+	if (await askServer('game-exist', socket) === false)
+		router.push('/');
 	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
+	window.addEventListener("beforeunload", handleBeforeUnload);
 	await fetchOtherPlayerGrids();
 
 	const gridUpdateInterval = setInterval(() => {
@@ -308,6 +317,26 @@ onUnmounted(async () => {
 	lines.value = 0;
 	gameOver.value = false;
 	permanentGrid.value = Array(COLS).fill("empty");
+});
+
+onBeforeRouteLeave((to, from, next) => {
+	const allowedPaths = ['/endgame', '/'];
+	if (allowedPaths.includes(to.path)) {
+		next();
+		return;
+	}
+	const confirmLeave = window.confirm("Rage quit ?");
+	if (confirmLeave) {
+		next();
+		socket.emit('return');
+		router.push('/');
+	} else {
+		next(false);
+	}
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
 </script>

@@ -1,6 +1,6 @@
 <script setup>
-import { onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onBeforeUnmount, onMounted } from "vue";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
 
@@ -12,10 +12,6 @@ console.log('Lobby join !');
 
 socket.emit('join-user', { seed, username });
 
-socket.on('client-join', (username) => {
-	console.log(`${username} join the game.`);
-});
-
 socket.on('launch-game', () => {
 	router.push('/game');
 });
@@ -23,6 +19,32 @@ socket.on('launch-game', () => {
 function createGame() {
 	socket.emit('launch-game', seed);
 }
+
+onBeforeRouteLeave((to, from, next) => {
+	const allowedPaths = ['/game', '/'];
+	if (allowedPaths.includes(to.path)) {
+		next();
+		return;
+	}
+	const confirmLeave = window.confirm("Rage quit ?");
+	if (confirmLeave) {
+		next();
+		socket.emit('return');
+	} else {
+		next(false);
+	}
+});
+
+function handleBeforeUnload(event) {
+	event.preventDefault();
+}
+
+onMounted(() => {
+	window.addEventListener("beforeunload", handleBeforeUnload);
+});
+onBeforeUnmount(() => {
+	window.removeEventListener("beforeunload", handleBeforeUnload);
+});
 
 </script>
 
