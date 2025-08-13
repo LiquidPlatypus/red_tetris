@@ -1,7 +1,7 @@
 <script setup>
 import {onBeforeUnmount, ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
-import {useRouter} from "vue-router";
+import {useRouter, onBeforeRouteLeave} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import { askServer } from "../utils.js";

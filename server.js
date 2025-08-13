@@ -123,6 +123,7 @@ io.on('connection', (socket) => {
             const grid_list = Array.from(grids.entries()).map(([grid, player]) => ({
                 grid: grid,
                 username: player.getUsername(),
+                status: player.getStatus(),
             }));
             socket.emit('grids', grid_list);
         }
@@ -139,7 +140,7 @@ io.on('connection', (socket) => {
             socket.emit('response', true);
             return;
         }
-        else if (signal === 'line-complete') {}
+        if (signal === 'line-complete') {}
     });
 
     // when host click on launch game :
