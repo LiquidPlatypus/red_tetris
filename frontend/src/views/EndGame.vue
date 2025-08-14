@@ -5,7 +5,6 @@ import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 import { askServer } from "@/utils";
 
-const seed = ref('');
 const username = ref('');
 
 socket.on('rank', (rank) => {
@@ -49,7 +48,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 	if (confirmLeave) {
 		next();
 		socket.emit('return');
-		router.push('/');
+		await router.push('/');
 	} else {
 		next(false);
 	}
@@ -79,8 +78,6 @@ onBeforeUnmount(() => {
 					<span class="dot-typing"></span>
 				</h2>
 			</div>
-
-			<div class="window-title">Results</div>
 		</div>
 
 		<div class="controls">
@@ -100,7 +97,7 @@ main {
 }
 
 #game-over {
-	background-color: #214132;
+	background-color: #005C5C;
 	border-top: 15px solid #3365ff;
 	border-left: 5px solid lightgray;
 	border-right: 10px solid lightgray;
@@ -114,28 +111,24 @@ main {
 }
 
 #game-over::before {
-	content: "";
+	content: "Results";
 	position: absolute;
-	top: -15px; /* pour aligner avec le border-top */
-	left: -4.7px; /* dépassement à gauche */
-	width: calc(100% + 15px); /* dépassement à droite aussi */
-	height: 15px; /* même hauteur que ton border-top */
-	background-color: blue; /* même couleur que ton border-top */
+	top: -15px;
+	left: -4.7px;
+	width: calc(100% + 15px);
+	height: 15px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: blue;
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
 	border-left: 3px solid lightgrey;
 	border-right: 3px solid lightgrey;
 	box-sizing: border-box;
-}
-
-.window-title {
-	position: relative;
-	top: -143.5px;
-	left: -46px;
-	text-align: center;
+	color: white;
 	font-weight: bold;
 	font-size: 12px;
-	color: white;
 }
 
 .controls {
@@ -147,7 +140,7 @@ h2 {
 }
 
 ::v-deep(.table-head) {
-	background-color: darkolivegreen;
+	background-color: #88ac28;
 	color: blue;
 	border: 3px red solid;
 }
