@@ -15,6 +15,15 @@ import {
 	attemptHardDrop
 } from "../logic.js";
 
+
+/**
+ * Possible organisation :
+ * -> Faire une giga fonction qui ecoute le server en boucle
+ * -> Cette fonction ecoute et met a jour les informations dcp sur le front (grid + next piece)
+ * -> Normalement on touche pas a la gestions des grids des autres joueurs
+ */
+
+
 const router = useRouter();
 
 const ROWS = 20;
@@ -51,7 +60,7 @@ socket.emit("grid", permanentGrid.value);
 const visualGrid = computed(() => {
 	return calculateVisualGrid(permanentGrid.value, activePiece.value);
 });
-const flattenedGrid = computed(() => visualGrid.value.flat());
+const flattenedGrid = computed(() => visualGrid.value.flat()); ////////////////// LIEN SERVER - FRONT /// But compute need be in back
 
 // Grille pour les autres joueurs.
 const otherPlayersGrids = ref({});
@@ -70,7 +79,7 @@ const flattenedOtherPlayers = computed(() => {
 const nextGrid = computed(() => {
 	return calculateNextPieceGrid(nextPiece.value, 4);
 });
-const flattenedNextPiece = computed(() => nextGrid.value.flat())
+const flattenedNextPiece = computed(() => nextGrid.value.flat()) /////// LIEN SERVER - FRONT /// Jpense tout mettre dans une fonction avec flattenedGrid pour gerer les appels server
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
@@ -228,6 +237,8 @@ function spawnNewPiece() {
 
 // ======== GESTIONNAIRE D'ÉVÉNEMENTS ========
 
+
+// REPLACE BY socket.emit('send-key', e.key or e.code);
 function handleKeyPress(e) {
 	if (e.key === "ArrowLeft") handleMovePiece(-1, 0);
 	else if (e.key === "ArrowRight") handleMovePiece(1, 0);
