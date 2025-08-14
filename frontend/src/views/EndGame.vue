@@ -115,7 +115,7 @@ main {
 	position: absolute;
 	top: -15px;
 	left: -4.7px;
-	width: calc(100% + 15px);
+	width: calc(100% + 14.5px);
 	height: 15px;
 	display: flex;
 	align-items: center;
@@ -135,25 +135,21 @@ main {
 	margin-top: 0.5rem;
 }
 
-h2 {
-	color: red;
-}
-
 ::v-deep(.table-head) {
 	background-color: #88ac28;
 	color: blue;
-	border: 3px red solid;
+	border-top: 2px black solid;
+	border-left: 2px black solid;
 }
 
 ::v-deep(#result-tab) {
-	border: 1px solid red;
 	color: yellow;
 	border-collapse: collapse;
+	border-left: 2px black solid;
 }
 
 ::v-deep(#result-tab th),
 ::v-deep(#result-tab td) {
-	border: 1px solid red;
 	padding: 8px;
 }
 
