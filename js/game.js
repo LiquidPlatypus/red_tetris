@@ -178,12 +178,62 @@ function handleKeyPress(e) {
 
 // ======== LOGIQUE DE JEU ========
 
+async function tick(socket) {
+	const moved = await handleMovePiece(0, 1);
+
+	if (!moved)
+		await handleLockPiece(socket);
+}
+
+function getIntervalDelay() {
+	const baseSpeed = 500;
+	const speedUp = Math.floor(lines.value / 10) * 50;
+	return Math.max(baseSpeed - speedUp, 100);
+}
+
+function startInterval(socket) {
+	if (intervalId.value !== null)
+		clearInterval(intervalId.value);
+
+	intervalId.value = setInterval(() => {
+		tick(socket);
+	}, getIntervalDelay());
+}
+
+export async function startGame(socket) {
+	if (isGameRunning.value)
+		return;
+
+	isGameRunning.value = true;
+
+	if (!isPaused.value) {
+		activePiece.value = nextPiece.value;
+		nextPiece.value = await getNextTetromino(socket);
+	}
+
+	isPaused.value = false;
+	startInterval(socket);
+}
+
+function stopGame() {
+	isGameRunning.value = false;
+	if (!gameOver.value)
+		isPaused.value = true;
+
+	if (intervalId.value !== null) {
+		clearInterval(intervalId.value);
+		intervalId.value = null;
+	}
+
+	window.removeEventListener("keydown", handleKeyPress);
+
+	if (gameOver.value) {
+		socket.emit('finish', lines.value);
+		router.push("/endgame");
+	}
+}
 
 
-// function spawnNewPiece(socket)
-// async function getNextTetromino(socket)
-// async function handleHardDrop(socket)
-// async function handleLockPiece(socket)
 //socket.emit("grid", permanentGrid.value); A METTRE DANS START GAME QUAND SOCKET SERA DEF
 //socket.emit('pieceUpdate', getFlattenedNextPiece()); // METTRE DANS setinterval()
 //socket.emit('gridUpdate', getFlattenedGrid()); // METTRE DANS setinterval()

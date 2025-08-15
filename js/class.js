@@ -9,10 +9,10 @@ constructor(username, host, status, id) {
 	const data = { username, host, status, id };
 
 	const instance = {
-	getUsername: () => data.username,
-	getHost: () => data.host,
-	getStatus: () => data.status,
-	getId: () => data.id
+		getUsername: () => data.username,
+		getHost: () => data.host,
+		getStatus: () => data.status,
+		getId: () => data.id,
 	};
 
 	return instance;
