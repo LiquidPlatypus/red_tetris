@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, onMounted } from "vue";
 import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
+import Window from "@/components/Window.vue";
 import { askServer } from "@/utils";
 
 const username = ref('');
@@ -60,7 +61,7 @@ function handleBeforeUnload(event) {
 
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
-		router.push('/');
+		await router.push('/');
 	window.addEventListener("beforeunload", handleBeforeUnload);
 });
 onBeforeUnmount(() => {
@@ -71,14 +72,14 @@ onBeforeUnmount(() => {
 
 <template>
 	<main class="endgame">
-		<div id="game-over">
+		<Window title="Results" variant="results" id="game-over">
 			<div id="result">
 				<!-- TABLEAU -->
 				<h2>WAITING FOR OTHER PLAYERS TO FINISH
 					<span class="dot-typing"></span>
 				</h2>
 			</div>
-		</div>
+		</Window>
 
 		<div class="controls">
 			<AppButton @click="retry">RETURN LOBBY</AppButton>
@@ -94,41 +95,6 @@ main {
 	flex-direction: column;
 	align-items: center;
 	padding: 20px;
-}
-
-#game-over {
-	background-color: #005C5C;
-	border-top: 15px solid #3365ff;
-	border-left: 5px solid lightgray;
-	border-right: 10px solid lightgray;
-	border-bottom: 10px solid lightgray;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	position: relative;
-	box-shadow: 2px 2px black;
-}
-
-#game-over::before {
-	content: "Results";
-	position: absolute;
-	top: -15px;
-	left: -4.7px;
-	width: calc(100% + 14.5px);
-	height: 15px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-color: blue;
-	border-top: 3px solid lightgrey;
-	border-bottom: 2px solid lightgrey;
-	border-left: 3px solid lightgrey;
-	border-right: 3px solid lightgrey;
-	box-sizing: border-box;
-	color: white;
-	font-weight: bold;
-	font-size: 12px;
 }
 
 .controls {
