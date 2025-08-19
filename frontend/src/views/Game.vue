@@ -5,24 +5,6 @@ import {useRouter, onBeforeRouteLeave} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
 import { askServer } from "../utils.js";
-import {
-	canPlacePieceAt,
-	calculateGridAfterLocking,
-	calculateVisualGrid,
-	calculateNextPieceGrid,
-	attemptMove,
-	attemptRotation,
-	attemptHardDrop
-} from "../logic.js";
-
-
-/**
- * Possible organisation :
- * -> Faire une giga fonction qui ecoute le server en boucle
- * -> Cette fonction ecoute et met a jour les informations dcp sur le front (grid + next piece)
- * -> Normalement on touche pas a la gestions des grids des autres joueurs
- */
-
 
 const router = useRouter();
 
@@ -43,24 +25,23 @@ askServer('get-username', socket).then((res) => {
 });
 
 const isGameRunning = ref(false);
+socket.on('getGameRunning', (info) => {
+	isGameRunning.value = info;
+});
 const gameOver = ref(false);
-const isPaused = ref(false);
+socket.on('getGameOver', (info) => {
+	gameOver.value = info;
+});
 const lines = ref(0);
-const intervalId = ref(null);
-
-// Pièces actives.
-const activePiece = ref(null);
-const nextPiece = ref(null);
-
-// Grille principale (quand les pieces se fixent).
-const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
-socket.emit("grid", permanentGrid.value);
+socket.on('getLines', (info) => {
+	lines.value = info;
+});
 
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
-const visualGrid = computed(() => {
-	return calculateVisualGrid(permanentGrid.value, activePiece.value);
+const flattenedGrid = ref([]);
+socket.on('flattenedGrid', (flatGrid) => {
+	flattenedGrid.value = flatGrid;
 });
-const flattenedGrid = computed(() => visualGrid.value.flat()); ////////////////// LIEN SERVER - FRONT /// But compute need be in back
 
 // Grille pour les autres joueurs.
 const otherPlayersGrids = ref({});
@@ -76,37 +57,25 @@ const flattenedOtherPlayers = computed(() => {
 });
 
 // Grille pour la prochaine pièce.
-const nextGrid = computed(() => {
-	return calculateNextPieceGrid(nextPiece.value, 4);
+const flattenedNextPiece = ref([]);
+socket.on('flattenedNextPiece', (flatNextPiece) => {
+	flattenedNextPiece.value = flatNextPiece;
 });
-const flattenedNextPiece = computed(() => nextGrid.value.flat()) /////// LIEN SERVER - FRONT /// Jpense tout mettre dans une fonction avec flattenedGrid pour gerer les appels server
+
+function getIntervalDelay() {
+	const baseSpeed = 500;
+	const speedUp = Math.floor(lines / 10) * 50;
+	return Math.max(baseSpeed - speedUp, 100);
+}
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
-/**
- * @need Set the key word 'await' before the function for use it.
- * @descristion Ask to server, who's the next Piece in bag
- */
-async function getNextTetromino() {
-	return new Promise((resolve, reject) => {
-		socket.emit('get-piece');
-
-		socket.once('piece', (piece) => {
-			if (!piece)
-				return reject("No piece received");
-
-			resolve({
-				shape: piece.shape.map(row =>
-					row.map(cell => (cell ? piece.color : "empty"))),
-				x: piece.x,
-				y: piece.y,
-				color: piece.color,
-			});
-		});
-
-		setTimeout(() => reject("Timeout getting piece"), 1000);
-	});
+function handleKeyPress(e) {
+	socket.emit('input', e.code);
 }
+socket.on('launch', () => {
+	socket.emit('launch');
+});
 
 async function fetchOtherPlayerGrids() {
 	try {
@@ -140,181 +109,11 @@ async function getUserGrid() {
 	});
 }
 
-// ======== ACTIONS UTILISATEUR ========
-
-async function handleMovePiece(dx, dy) {
-	if (!activePiece.value)
-		return false;
-
-	const moveResult = attemptMove(
-		activePiece.value,
-		permanentGrid.value,
-		dx, dy,
-		ROWS, COLS
-	);
-
-	if (moveResult.success) {
-		activePiece.value = moveResult.newPiece;
-		return true;
-	}
-
-	return false;
-}
-
-async function handleRotatePiece() {
-	if (!activePiece.value)
-		return false;
-
-	const rotationResult = attemptRotation(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (rotationResult.success)
-		activePiece.value = rotationResult.newPiece;
-}
-
-async function handleHardDrop() {
-	if (!activePiece.value)
-		return false;
-
-	const droppedPiece = attemptHardDrop(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (droppedPiece.success) {
-		activePiece.value = droppedPiece.newPiece;
-		await handleLockPiece();
-		return true;
-	}
-
-	return false;
-}
-
-async function handleLockPiece() {
-	if (!activePiece.value)
-		return;
-
-	const { newGrid, linesCleared } = calculateGridAfterLocking(
-		permanentGrid.value,
-		activePiece.value,
-		ROWS, COLS,
-		lines.value
-	);
-
-	permanentGrid.value = newGrid;
-	socket.emit("grid", permanentGrid.value);
-
-	lines.value = linesCleared;
-
-	activePiece.value = nextPiece.value;
-	nextPiece.value = await getNextTetromino();
-
-	if (linesCleared > 0)
-		startInterval();
-
-	spawnNewPiece();
-}
-
-function spawnNewPiece() {
-	if (!activePiece.value)
-		return;
-
-	const canSpawn = canPlacePieceAt(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (!canSpawn) {
-		gameOver.value = true;
-		stopGame();
-	}
-}
-
-// ======== GESTIONNAIRE D'ÉVÉNEMENTS ========
-
-
-// REPLACE BY socket.emit('send-key', e.key or e.code);
-function handleKeyPress(e) {
-	if (e.key === "ArrowLeft") handleMovePiece(-1, 0);
-	else if (e.key === "ArrowRight") handleMovePiece(1, 0);
-	else if (e.key === "ArrowDown") handleMovePiece(0, 1);
-	else if (e.key === "ArrowUp") handleRotatePiece();
-	else if (e.code === "Space") handleHardDrop();
-	socket.emit('input', e.code);
-}
-
-// ======== LOGIQUE DE JEU ========
-
-async function tick() {
-	const moved = await handleMovePiece(0, 1);
-
-	if (!moved)
-		await handleLockPiece();
-}
-
-function getIntervalDelay() {
-	const baseSpeed = 500;
-	const speedUp = Math.floor(lines.value / 10) * 50;
-	return Math.max(baseSpeed - speedUp, 100);
-}
-
-function startInterval() {
-	if (intervalId.value !== null)
-		clearInterval(intervalId.value);
-
-	intervalId.value = setInterval(() => {
-		tick();
-		fetchOtherPlayerGrids();
-	}, getIntervalDelay());
-}
-
-async function startGame() {
-	if (isGameRunning.value)
-		return;
-
-	window.addEventListener("keydown", handleKeyPress);
-	isGameRunning.value = true;
-
-	if (!isPaused.value) {
-		activePiece.value = nextPiece.value;
-		nextPiece.value = await getNextTetromino();
-	}
-
-	isPaused.value = false;
-	startInterval();
-}
+// ======== INITIALISATION ========
 
 async function hostStart() {
 	await askServer('start-game', socket);
 }
-socket.on('launch', () => {
-	startGame();
-});
-
-function stopGame() {
-	isGameRunning.value = false;
-	if (!gameOver.value)
-		isPaused.value = true;
-
-	if (intervalId.value !== null) {
-		clearInterval(intervalId.value);
-		intervalId.value = null;
-	}
-
-	window.removeEventListener("keydown", handleKeyPress);
-
-	if (gameOver.value) {
-		socket.emit('finish', lines.value);
-		router.push("/endgame");
-	}
-}
-
-// ======== INITIALISATION ========
 
 function handleBeforeUnload(event) {
 	event.preventDefault();
@@ -323,7 +122,6 @@ function handleBeforeUnload(event) {
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
 		await router.push('/');
-	nextPiece.value = await getNextTetromino();
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
 	await fetchOtherPlayerGrids();
@@ -336,12 +134,6 @@ onMounted(async () => {
 	onUnmounted(() => {
 		clearInterval(gridUpdateInterval);
 	});
-});
-
-onUnmounted(async () => {
-	lines.value = 0;
-	gameOver.value = false;
-	permanentGrid.value = Array(COLS).fill("empty");
 });
 
 onBeforeRouteLeave((to, from, next) => {
@@ -408,10 +200,6 @@ onBeforeUnmount(() => {
 							class="cell_next_piece"
 						></div>
 					</div>
-				</div>
-
-				<div class="pause-overlay" v-if="isPaused">
-					PAUSE
 				</div>
 			</div>
 		</div>

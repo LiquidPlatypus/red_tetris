@@ -1,4 +1,3 @@
-import {ref, computed} from "vue";
 import {
 	canPlacePieceAt,
 	calculateGridAfterLocking,
@@ -8,19 +7,11 @@ import {
 	attemptRotation,
 	attemptHardDrop
 } from "./logic.js";
-import { refillBag } from "./class.js";
 
-const {
-	Player,
-	Game,
-	getGame,
-	addGame,
-	removeGame,
+import {
 	TETROMINOS,
-	Piece,
-	createSeededRandom,
-	refillBag 
-} = require('./js/class.js');
+	refillBag
+} from './class.js';
 
 export function startGame(socket, instance_player, instance_game, random) {
 	
@@ -28,30 +19,25 @@ export function startGame(socket, instance_player, instance_game, random) {
 	const ROWS = 20;
 	const COLS = 10;
 
-	isGameRunning = false;
-	gameOver = false;
-	lines = 0;
-	intervalId = null;
+	let isGameRunning = false;
+	let gameOver = false;
+	let lines = 0;
+	let intervalId = null;
+	let grids;
 
 	// Piece:
-	activePiece = null;
-	nextPiece = null;
+	let activePiece = null;
+	let nextPiece = null;
 
-	const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
-	instance_game.addGrid(instance_player, permanentGrid.value);
+	let permanentGrid = Array.from({ length: ROWS }, () => Array(COLS).fill("empty"));
+	instance_game.addGrid(instance_player, permanentGrid);
 
 	function getVisualGrid() {
 		return calculateVisualGrid(permanentGrid, activePiece);
 	}
-	function getFlattenedGrid() {
-		return getVisualGrid().flat();
-	}
 
 	function getNextGrid() {
-		return calculateNextPieceGrid(nextPiece.value, 5);
-	}
-	function getFlattenedNextPiece() {
-		return getNextGrid().flat();
+		return calculateNextPieceGrid(nextPiece, 5);
 	}
 
 	function getNextTetromino() {
@@ -69,73 +55,92 @@ export function startGame(socket, instance_player, instance_game, random) {
 	}
 
 	function handleMovePiece(dx, dy) {
-		if (!activePiece.value)
+		if (!activePiece)
 			return false;
 
 		const moveResult = attemptMove(
-			activePiece.value,
-			permanentGrid.value,
+			activePiece,
+			permanentGrid,
 			dx, dy,
 			ROWS, COLS
 		);
 
 		if (moveResult.success) {
-			activePiece.value = moveResult.newPiece;
+			activePiece = moveResult.newPiece;
 			return true;
 		}
 		return false;
 	}
 
 	function handleRotatePiece() {
-		if (!activePiece.value)
+		if (!activePiece)
 			return false;
 
 		const rotationResult = attemptRotation(
-			activePiece.value,
-			permanentGrid.value,
+			activePiece,
+			permanentGrid,
 			ROWS, COLS
 		);
 
 		if (rotationResult.success)
-			activePiece.value = rotationResult.newPiece;
+			activePiece = rotationResult.newPiece;
 	}
 
 	function handleHardDrop() {
-		if (!activePiece.value)
+		if (!activePiece)
 			return false;
 
 		const droppedPiece = attemptHardDrop(
-			activePiece.value,
-			permanentGrid.value,
+			activePiece,
+			permanentGrid,
 			ROWS, COLS
 		);
 
 		if (droppedPiece.success) {
-			activePiece.value = droppedPiece.newPiece;
+			activePiece = droppedPiece.newPiece;
 			handleLockPiece();
 			return true;
 		}
 		return false;
 	}
 
+	function spawnNewPiece() {
+		if (!activePiece)
+			return;
+
+		const canSpawn = canPlacePieceAt(
+			activePiece,
+			permanentGrid,
+			ROWS, COLS
+		);
+
+		if (!canSpawn) {
+			gameOver = true;
+			socket.emit('getGameOver', gameOver);
+			stopGame();
+		}
+	}
+
 	function handleLockPiece() {
-		if (!activePiece.value)
+		if (!activePiece)
 			return;
 
 		const { newGrid, linesCleared } = calculateGridAfterLocking(
-			permanentGrid.value,
-			activePiece.value,
+			permanentGrid,
+			activePiece,
 			ROWS, COLS,
-			lines.value
+			lines
 		);
 
-		permanentGrid.value = newGrid;
-		instance_game.addGrid(instance_player, permanentGrid.value);
+		permanentGrid = newGrid;
+		instance_game.addGrid(instance_player, permanentGrid);
 
-		lines.value = linesCleared;
+		lines = linesCleared;
+		socket.emit('getLines', lines);
 
-		activePiece.value = nextPiece.value;
-		nextPiece.value = getNextTetromino();
+		activePiece = nextPiece;
+		nextPiece = getNextTetromino();
+		socket.emit('flattenedNextPiece', getNextGrid());
 
 		if (linesCleared > 0)
 			startInterval();
@@ -143,68 +148,56 @@ export function startGame(socket, instance_player, instance_game, random) {
 		spawnNewPiece();
 	}
 
-	function spawnNewPiece() {
-		if (!activePiece.value)
-			return;
-
-		const canSpawn = canPlacePieceAt(
-			activePiece.value,
-			permanentGrid.value,
-			ROWS, COLS
-		);
-
-		if (!canSpawn) {
-			gameOver.value = true;
-			stopGame();
-		}
-	}
-
 	function tick() {
 		const moved = handleMovePiece(0, 1);
 
 		if (!moved)
 			handleLockPiece();
+
+		socket.emit('flattenedGrid', getVisualGrid());
 	}
 
 	function getIntervalDelay() {
 		const baseSpeed = 500;
-		const speedUp = Math.floor(lines.value / 10) * 50;
+		const speedUp = Math.floor(lines / 10) * 50;
 		return Math.max(baseSpeed - speedUp, 100);
 	}
 
 	function startInterval() {
-		if (intervalId.value !== null)
-			clearInterval(intervalId.value);
-		intervalId.value = setInterval(() => {
+		if (intervalId !== null)
+			clearInterval(intervalId);
+		intervalId = setInterval(() => {
 			tick();
 		}, getIntervalDelay());
 	}
 
 	function stopGame() {
-		isGameRunning.value = false;
-		if (intervalId.value !== null) {
-			clearInterval(intervalId.value);
-			intervalId.value = null;
+		isGameRunning = false;
+		socket.emit('getGameRunning', isGameRunning);
+		if (intervalId !== null) {
+			clearInterval(intervalId);
+			intervalId = null;
 		}
 
-		if (gameOver.value) {
-			//endgames
+		if (gameOver) {
+			lines = 0;
+			gameOver = false;
+			permanentGrid = Array(COLS).fill("empty");
+			socket.emit('getLines', lines);
+			socket.emit('getGameOver', gameOver);
 		}
 	}
 
 	// LAUNCH PART
-	if (isGameRunning.value)
+	if (isGameRunning)
 		return;
-	isGameRunning.value = true;
+	isGameRunning = true;
+	socket.emit('getGameRunning', isGameRunning);
 	startInterval();
 
-	return { handleMovePiece };
-}
-
-function handleKeyPress(e) {
-	if (e === "ArrowLeft") handleMovePiece(-1, 0);
-		else if (e === "ArrowRight") handleMovePiece(1, 0);
-		else if (e === "ArrowDown") handleMovePiece(0, 1);
-		else if (e === "ArrowUp") handleRotatePiece();
-		else if (e === "Space") handleHardDrop();
+	return {
+		handleMovePiece,
+		handleHardDrop,
+		handleRotatePiece,
+	};
 }

@@ -1,10 +1,10 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const os = require('os');
-const path = require('path');
+import express from'express';
+import http from'http';
+import { Server } from'socket.io';
+import os from'os';
+import path from'path';
 
-const { 
+import { 
     Player,
     Game,
     getGame,
@@ -14,10 +14,10 @@ const {
     Piece,
     createSeededRandom,
     refillBag
-} = require('./js/class.js');
-const {
+} from './js/class.js';
+import {
     startGame
-} = require('./js/game.js');
+} from './js/game.js';
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -108,36 +108,11 @@ io.on('connection', (socket) => {
     // Getter and Setter
     socket.on('input', (key) => {
         if (game) {
-            if (key === "ArrowLeft") {}
-            else if (key === "ArrowRight") {}
-            else if (key === "ArrowDown") {}
-            else if (key === "ArrowUp") {}
-            else if (key === "Space") {}
-        }
-    });
-    socket.on('get-piece', () => {
-        if (instance_game) {
-			const bag = instance_player.getBag();
-            if (bag.length === 0) {
-                refillBag(bag, random);
-            }
-            const index = bag.shift();
-            const tetromino = TETROMINOS[index];
-            socket.emit('piece', {
-                shape: tetromino.getShape(),
-                x: tetromino.getX(),
-                y: tetromino.getY(),
-                color: tetromino.getColor(),
-            });
-        } else {
-            socket.emit('error', 'game not exist');
-        }
-    });
-    socket.on('grid', (value) => {
-        if (instance_game) {
-            instance_game.addGrid(instance_player, value);
-        } else {
-            socket.emit('error', 'game not exist');
+            if (key === "ArrowLeft") { game.handleMovePiece(-1, 0); }
+            else if (key === "ArrowRight") { game.handleMovePiece(1, 0); }
+            else if (key === "ArrowDown") { game.handleMovePiece(0, 1); }
+            else if (key === "ArrowUp") { game.handleRotatePiece(); }
+            else if (key === "Space") { game.handleHardDrop(); }
         }
     });
     socket.on('get-grids', () => {
@@ -168,8 +143,20 @@ io.on('connection', (socket) => {
             return;
         }
         if (signal === 'start-game') {
-            if (instance_player.getHost())
-                io.to(`${instance_game.getSeed()}`).emit('launch');
+            if (instance_player.getHost()) {
+                io.in(instance_game.getSeed()).fetchSockets().then((sockets) => {
+                    for (const s of sockets) {
+                        s.emit('launch');
+                    }
+                });
+            }
+        }
+    });
+
+    socket.on('launch', () => {
+        console.log('lololo');
+        if (instance_game && instance_player && instance_game.getSeed('')) {
+            game = startGame(socket, instance_player, instance_game, random);
         }
     });
 
@@ -225,7 +212,7 @@ io.on('connection', (socket) => {
     });
     socket.on('refreshme', () => {
         if (instance_game) {
-            new_player = instance_game.getPlayer(instance_player.getId());
+            const new_player = instance_game.getPlayer(instance_player.getId());
             console.log(new_player.getUsername());
             instance_player = new_player;
         }
