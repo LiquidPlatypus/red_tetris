@@ -375,6 +375,7 @@ onBeforeUnmount(() => {
 				:title="username"
 				variant="username"
 				id="game-container"
+				customClass="fix-overflow"
 			>
 				<div class="game-content">
 					<div id="game-zone" class="tetris-grid">

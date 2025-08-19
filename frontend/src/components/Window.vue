@@ -33,20 +33,22 @@ defineProps({
 	position: absolute;
 	top: -15px;
 	left: -5px;
-	width: calc(100% + 10px);
+	right: -5px;
 	height: 15px;
 	background-color: #000082;
 	border-top: 3px solid lightgrey;
 	border-bottom: 2px solid lightgrey;
-	border-left: 3px solid lightgrey;
-	border-right: 3px solid lightgrey;
+	border-left: 2px solid lightgrey;
+	border-right: 2px solid lightgrey;
 	display: flex;
 	align-items: center;
 	justify-content: left;
 	color: white;
 	font-size: 0.8rem;
 	font-weight: bold;
+	box-sizing: border-box;
 }
+
 
 .win95-title {
 	margin-left: 3px;
@@ -55,4 +57,10 @@ defineProps({
 .win95-content {
 	padding: 0.5rem;
 }
+
+
+.fix-overflow .win95-title-bar {
+	left: -4.5px;
+}
+
 </style>
