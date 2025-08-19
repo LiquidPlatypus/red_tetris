@@ -8,232 +8,202 @@ import {
 	attemptRotation,
 	attemptHardDrop
 } from "./logic.js";
+import { refillBag } from "./class.js";
 
-const ROWS = 20;
-const COLS = 10;
+const {
+	Player,
+	Game,
+	getGame,
+	addGame,
+	removeGame,
+	TETROMINOS,
+	Piece,
+	createSeededRandom,
+	refillBag 
+} = require('./js/class.js');
 
-const positions = [
-	{class: "top-left"},
-	{class: "top-right"},
-	{class: "bottom-left"},
-	{class: "bottom-right"},
-]
+export function startGame(socket, instance_player, instance_game, random) {
+	
+	// INIT PART
+	const ROWS = 20;
+	const COLS = 10;
 
-isGameRunning = false;
-gameOver = false;
-lines = 0;
-intervalId = null;
+	isGameRunning = false;
+	gameOver = false;
+	lines = 0;
+	intervalId = null;
 
-// Pièces actives.
-activePiece = null;
-nextPiece = null;
+	// Piece:
+	activePiece = null;
+	nextPiece = null;
 
-const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
+	const permanentGrid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill("empty")));
+	instance_game.addGrid(instance_player, permanentGrid.value);
 
-function getVisualGrid() {
-	return calculateVisualGrid(permanentGrid, activePiece);
-}
-function getFlattenedGrid() {
-	return getVisualGrid().flat();
-}
+	function getVisualGrid() {
+		return calculateVisualGrid(permanentGrid, activePiece);
+	}
+	function getFlattenedGrid() {
+		return getVisualGrid().flat();
+	}
 
-function getNextGrid() {
-    return calculateNextPieceGrid(nextPiece.value, 5);
-}
-function getFlattenedNextPiece() {
-    return getNextGrid().flat();
-}
+	function getNextGrid() {
+		return calculateNextPieceGrid(nextPiece.value, 5);
+	}
+	function getFlattenedNextPiece() {
+		return getNextGrid().flat();
+	}
 
-// ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
-
-/**
- * @need Set the key word 'await' before the function for use it.
- * @descristion Ask to server, who's the next Piece in bag
- */
-async function getNextTetromino(socket) {
-	return new Promise((resolve, reject) => {
-		socket.emit('get-piece');
-
-		socket.once('piece', (piece) => {
-			if (!piece)
-				return reject("No piece received");
-
-			resolve({
-				shape: piece.shape.map(row =>
-					row.map(cell => (cell ? piece.color : "empty"))),
-				x: piece.x,
-				y: piece.y,
-				color: piece.color,
-			});
+	function getNextTetromino() {
+		const bag = instance_player.getBag();
+		if (bag.length === 0)
+			refillBag(bag, random);
+		const index = bag.shift();
+		const tetromino = TETROMINOS[index];
+		return ({
+			shape: tetromino.getShape(),
+			x: tetromino.getX(),
+			y: tetromino.getY(),
+			color: tetromino.getColor(),
 		});
-
-		setTimeout(() => reject("Timeout getting piece"), 1000);
-	});
-}
-
-// ======== ACTIONS UTILISATEUR ========
-
-async function handleMovePiece(dx, dy) {
-	if (!activePiece.value)
-		return false;
-
-	const moveResult = attemptMove(
-		activePiece.value,
-		permanentGrid.value,
-		dx, dy,
-		ROWS, COLS
-	);
-
-	if (moveResult.success) {
-		activePiece.value = moveResult.newPiece;
-		return true;
 	}
 
-	return false;
-}
+	function handleMovePiece(dx, dy) {
+		if (!activePiece.value)
+			return false;
 
-async function handleRotatePiece() {
-	if (!activePiece.value)
+		const moveResult = attemptMove(
+			activePiece.value,
+			permanentGrid.value,
+			dx, dy,
+			ROWS, COLS
+		);
+
+		if (moveResult.success) {
+			activePiece.value = moveResult.newPiece;
+			return true;
+		}
 		return false;
-
-	const rotationResult = attemptRotation(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (rotationResult.success)
-		activePiece.value = rotationResult.newPiece;
-}
-
-async function handleHardDrop(socket) {
-	if (!activePiece.value)
-		return false;
-
-	const droppedPiece = attemptHardDrop(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (droppedPiece.success) {
-		activePiece.value = droppedPiece.newPiece;
-		await handleLockPiece(socket);
-		return true;
 	}
 
-	return false;
-}
+	function handleRotatePiece() {
+		if (!activePiece.value)
+			return false;
 
-async function handleLockPiece(socket) {
-	if (!activePiece.value)
-		return;
+		const rotationResult = attemptRotation(
+			activePiece.value,
+			permanentGrid.value,
+			ROWS, COLS
+		);
 
-	const { newGrid, linesCleared } = calculateGridAfterLocking(
-		permanentGrid.value,
-		activePiece.value,
-		ROWS, COLS,
-		lines.value
-	);
-
-	permanentGrid.value = newGrid;
-	socket.emit("grid", permanentGrid.value);
-
-	lines.value = linesCleared;
-
-	activePiece.value = nextPiece.value;
-	nextPiece.value = await getNextTetromino(socket);
-
-	if (linesCleared > 0)
-		startInterval();
-
-	spawnNewPiece(socket);
-}
-
-function spawnNewPiece(socket) {
-	if (!activePiece.value)
-		return;
-
-	const canSpawn = canPlacePieceAt(
-		activePiece.value,
-		permanentGrid.value,
-		ROWS, COLS
-	);
-
-	if (!canSpawn) {
-		gameOver.value = true;
-		stopGame(socket);
+		if (rotationResult.success)
+			activePiece.value = rotationResult.newPiece;
 	}
-}
 
-// ======== GESTIONNAIRE D'ÉVÉNEMENTS ========
+	function handleHardDrop() {
+		if (!activePiece.value)
+			return false;
 
-function handleKeyPress(e) {
-	if (e === "ArrowLeft") handleMovePiece(-1, 0);
-	else if (e === "ArrowRight") handleMovePiece(1, 0);
-	else if (e === "ArrowDown") handleMovePiece(0, 1);
-	else if (e === "ArrowUp") handleRotatePiece();
-	else if (e === "Space") handleHardDrop();
-}
+		const droppedPiece = attemptHardDrop(
+			activePiece.value,
+			permanentGrid.value,
+			ROWS, COLS
+		);
 
-// ======== LOGIQUE DE JEU ========
+		if (droppedPiece.success) {
+			activePiece.value = droppedPiece.newPiece;
+			handleLockPiece();
+			return true;
+		}
+		return false;
+	}
 
-async function tick(socket) {
-	const moved = await handleMovePiece(0, 1);
+	function handleLockPiece() {
+		if (!activePiece.value)
+			return;
 
-	if (!moved)
-		await handleLockPiece(socket);
-}
+		const { newGrid, linesCleared } = calculateGridAfterLocking(
+			permanentGrid.value,
+			activePiece.value,
+			ROWS, COLS,
+			lines.value
+		);
 
-function getIntervalDelay() {
-	const baseSpeed = 500;
-	const speedUp = Math.floor(lines.value / 10) * 50;
-	return Math.max(baseSpeed - speedUp, 100);
-}
+		permanentGrid.value = newGrid;
+		instance_game.addGrid(instance_player, permanentGrid.value);
 
-function startInterval(socket) {
-	if (intervalId.value !== null)
-		clearInterval(intervalId.value);
+		lines.value = linesCleared;
 
-	intervalId.value = setInterval(() => {
-		tick(socket);
-	}, getIntervalDelay());
-}
+		activePiece.value = nextPiece.value;
+		nextPiece.value = getNextTetromino();
 
-export async function startGame(socket) {
+		if (linesCleared > 0)
+			startInterval();
+
+		spawnNewPiece();
+	}
+
+	function spawnNewPiece() {
+		if (!activePiece.value)
+			return;
+
+		const canSpawn = canPlacePieceAt(
+			activePiece.value,
+			permanentGrid.value,
+			ROWS, COLS
+		);
+
+		if (!canSpawn) {
+			gameOver.value = true;
+			stopGame();
+		}
+	}
+
+	/// A VOIR COMMENT ON GERE APRES
+	function handleKeyPress(e) {
+		if (e === "ArrowLeft") handleMovePiece(-1, 0);
+			else if (e === "ArrowRight") handleMovePiece(1, 0);
+			else if (e === "ArrowDown") handleMovePiece(0, 1);
+			else if (e === "ArrowUp") handleRotatePiece();
+			else if (e === "Space") handleHardDrop();
+	}
+
+	function tick() {
+		const moved = handleMovePiece(0, 1);
+
+		if (!moved)
+			handleLockPiece();
+	}
+
+	function getIntervalDelay() {
+		const baseSpeed = 500;
+		const speedUp = Math.floor(lines.value / 10) * 50;
+		return Math.max(baseSpeed - speedUp, 100);
+	}
+
+	function startInterval() {
+		if (intervalId.value !== null)
+			clearInterval(intervalId.value);
+		intervalId.value = setInterval(() => {
+			tick();
+		}, getIntervalDelay());
+	}
+
+	function stopGame() {
+		isGameRunning.value = false;
+		if (intervalId.value !== null) {
+			clearInterval(intervalId.value);
+			intervalId.value = null;
+		}
+
+		if (gameOver.value) {
+			//endgames
+		}
+	}
+
+	// LAUNCH PART
 	if (isGameRunning.value)
 		return;
-
 	isGameRunning.value = true;
-
-	if (!isPaused.value) {
-		activePiece.value = nextPiece.value;
-		nextPiece.value = await getNextTetromino(socket);
-	}
-
-	isPaused.value = false;
-	startInterval(socket);
+	startInterval();
 }
-
-function stopGame() {
-	isGameRunning.value = false;
-	if (!gameOver.value)
-		isPaused.value = true;
-
-	if (intervalId.value !== null) {
-		clearInterval(intervalId.value);
-		intervalId.value = null;
-	}
-
-	window.removeEventListener("keydown", handleKeyPress);
-
-	if (gameOver.value) {
-		socket.emit('finish', lines.value);
-		router.push("/endgame");
-	}
-}
-
-
-//socket.emit("grid", permanentGrid.value); A METTRE DANS START GAME QUAND SOCKET SERA DEF
-//socket.emit('pieceUpdate', getFlattenedNextPiece()); // METTRE DANS setinterval()
-//socket.emit('gridUpdate', getFlattenedGrid()); // METTRE DANS setinterval()

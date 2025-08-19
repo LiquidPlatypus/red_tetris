@@ -53,7 +53,6 @@ app.get('/:room/:username', (req, res) => {
 io.on('connection', (socket) => {
     let instance_player = new Player('', false, false, socket.id);
     let instance_game = new Game('');
-    const bag = [];
     let random;
 
     // client click on create-game button :
@@ -95,6 +94,7 @@ io.on('connection', (socket) => {
     // Getter and Setter
     socket.on('get-piece', () => {
         if (instance_game) {
+			const bag = instance_player.getBag();
             if (bag.length === 0) {
                 refillBag(bag, random);
             }

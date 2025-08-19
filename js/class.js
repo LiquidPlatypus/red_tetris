@@ -6,6 +6,7 @@ const games = new Map();
 
 export class Player {
 constructor(username, host, status, id) {
+	const bag = [];
 	const data = { username, host, status, id };
 
 	const instance = {
@@ -13,6 +14,7 @@ constructor(username, host, status, id) {
 		getHost: () => data.host,
 		getStatus: () => data.status,
 		getId: () => data.id,
+		getBag: () => bag,
 	};
 
 	return instance;
