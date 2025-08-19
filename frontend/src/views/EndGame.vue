@@ -7,29 +7,6 @@ import Window from "@/components/Window.vue";
 import { askServer } from "@/utils";
 
 const username = ref('');
-
-socket.on('rank', (rank) => {
-	document.getElementById("result").innerHTML = `
-		<table id="result-tab">
-			<thead class="table-head">
-				<tr>
-					<th>Username</th>
-					<th>Score</th>
-				</tr>
-			</thead>
-			<tbody>
-				${rank.map(({score, username}) => `
-					<tr>
-						<td title="${username}">${username}</td>
-						<td>${score}</td>
-					</tr>
-				`).join('')}
-			</tbody>
-		</table>
-	`;
-});
-
-
 const router = useRouter();
 
 function retry() {
@@ -66,6 +43,28 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => {
 	window.removeEventListener("beforeunload", handleBeforeUnload);
+});
+
+
+socket.on('rank', (rank) => {
+	document.getElementById("result").innerHTML = `
+		<table id="result-tab">
+			<thead class="table-head">
+				<tr>
+					<th>Username</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody>
+				${rank.map(({score, username}) => `
+				<tr>
+					<td title="${username}">${username}</td>
+					<td>${score}</td>
+				</tr>
+				`).join('')}
+			</tbody>
+		</table>
+`;
 });
 
 </script>
