@@ -4,7 +4,20 @@ const { Server } = require('socket.io');
 const os = require('os');
 const path = require('path');
 
-const { Player, Game, getGame, addGame, removeGame, TETROMINOS, Piece, createSeededRandom, refillBag  } = require('./js/class.js');
+const { 
+    Player,
+    Game,
+    getGame,
+    addGame,
+    removeGame,
+    TETROMINOS,
+    Piece,
+    createSeededRandom,
+    refillBag
+} = require('./js/class.js');
+const {
+    startGame
+} = require('./js/game.js');
 
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
@@ -54,6 +67,7 @@ io.on('connection', (socket) => {
     let instance_player = new Player('', false, false, socket.id);
     let instance_game = new Game('');
     let random;
+    let game;
 
     // client click on create-game button :
     socket.on('create-lobby', (username) => {
@@ -92,6 +106,15 @@ io.on('connection', (socket) => {
     /// GAME SERVER INFO    
 
     // Getter and Setter
+    socket.on('input', (key) => {
+        if (game) {
+            if (key === "ArrowLeft") {}
+            else if (key === "ArrowRight") {}
+            else if (key === "ArrowDown") {}
+            else if (key === "ArrowUp") {}
+            else if (key === "Space") {}
+        }
+    });
     socket.on('get-piece', () => {
         if (instance_game) {
 			const bag = instance_player.getBag();

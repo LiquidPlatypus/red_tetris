@@ -159,15 +159,6 @@ export function startGame(socket, instance_player, instance_game, random) {
 		}
 	}
 
-	/// A VOIR COMMENT ON GERE APRES
-	function handleKeyPress(e) {
-		if (e === "ArrowLeft") handleMovePiece(-1, 0);
-			else if (e === "ArrowRight") handleMovePiece(1, 0);
-			else if (e === "ArrowDown") handleMovePiece(0, 1);
-			else if (e === "ArrowUp") handleRotatePiece();
-			else if (e === "Space") handleHardDrop();
-	}
-
 	function tick() {
 		const moved = handleMovePiece(0, 1);
 
@@ -206,4 +197,14 @@ export function startGame(socket, instance_player, instance_game, random) {
 		return;
 	isGameRunning.value = true;
 	startInterval();
+
+	return { handleMovePiece };
+}
+
+function handleKeyPress(e) {
+	if (e === "ArrowLeft") handleMovePiece(-1, 0);
+		else if (e === "ArrowRight") handleMovePiece(1, 0);
+		else if (e === "ArrowDown") handleMovePiece(0, 1);
+		else if (e === "ArrowUp") handleRotatePiece();
+		else if (e === "Space") handleHardDrop();
 }

@@ -245,6 +245,7 @@ function handleKeyPress(e) {
 	else if (e.key === "ArrowDown") handleMovePiece(0, 1);
 	else if (e.key === "ArrowUp") handleRotatePiece();
 	else if (e.code === "Space") handleHardDrop();
+	socket.emit('input', e.code);
 }
 
 // ======== LOGIQUE DE JEU ========
