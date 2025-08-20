@@ -45,46 +45,52 @@ onBeforeUnmount(() => {
 	window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
+const rank = ref([]);
+const allPlayersFinished = ref(false);
 
-socket.on('rank', (rank) => {
-	document.getElementById("result").innerHTML = `
-		<table id="result-tab">
-			<thead class="table-head">
-				<tr>
-					<th>Username</th>
-					<th>Score</th>
-				</tr>
-			</thead>
-			<tbody>
-				${rank.map(({score, username}) => `
-				<tr>
-					<td title="${username}">${username}</td>
-					<td>${score}</td>
-				</tr>
-				`).join('')}
-			</tbody>
-		</table>
-`;
+socket.on('rank', (data) => {
+	rank.value = data;
+	allPlayersFinished.value = true;
 });
 
 </script>
 
 <template>
-	<main class="endgame">
-		<Window title="Results" variant="results" id="game-over">
-			<div id="result">
-				<!-- TABLEAU -->
-				<h2>WAITING FOR OTHER PLAYERS TO FINISH
+<main class="endgame">
+	<Window title="Results" variant="results" id="game-over">
+		<div id="result">
+			<template v-if="allPlayersFinished">
+				<table id="result-tab">
+					<thead class="table-head">
+					<tr>
+						<th>Username</th>
+						<th>Score</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr v-for="{ username, score } in rank" :key="username">
+						<td :title="username">{{ username }}</td>
+						<td>{{ score }}</td>
+					</tr>
+					</tbody>
+				</table>
+			</template>
+
+			<template v-else>
+				<h2>
+					WAITING FOR OTHER PLAYERS TO FINISH
 					<span class="dot-typing"></span>
 				</h2>
-			</div>
-		</Window>
-
-		<div class="controls">
-			<AppButton @click="retry">RETURN LOBBY</AppButton>
+			</template>
 		</div>
-		<RouterView />
-	</main>
+	</Window>
+
+	<div class="controls">
+		<AppButton @click="retry">RETURN LOBBY</AppButton>
+	</div>
+
+	<RouterView />
+</main>
 </template>
 
 <style scoped>
