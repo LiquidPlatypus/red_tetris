@@ -31,6 +31,11 @@ socket.on('getGameRunning', (info) => {
 const gameOver = ref(false);
 socket.on('getGameOver', (info) => {
 	gameOver.value = info;
+	if (gameOver.value) {
+		socket.emit('finish', lines.value);
+		router.push('endgame');
+	}
+
 });
 const lines = ref(0);
 socket.on('getLines', (info) => {
@@ -39,6 +44,7 @@ socket.on('getLines', (info) => {
 
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
 const flattenedGrid = ref([]);
+socket.emit('ask-server', 'init-grid');
 socket.on('flattenedGrid', (flatGrid) => {
 	flattenedGrid.value = flatGrid;
 });
@@ -58,7 +64,11 @@ const flattenedOtherPlayers = computed(() => {
 
 // Grille pour la prochaine pièce.
 const flattenedNextPiece = ref([]);
+socket.emit('ask-server', 'init-piece');
 socket.on('flattenedNextPiece', (flatNextPiece) => {
+	console.log("NASM RECEIVED >>>:", flatNextPiece);
+	console.log("typeof is", typeof flatNextPiece);
+	console.log("Array.isArray ?", Array.isArray(flatNextPiece));
 	flattenedNextPiece.value = flatNextPiece;
 });
 
@@ -111,29 +121,39 @@ async function getUserGrid() {
 
 // ======== INITIALISATION ========
 
+const isProcessing = ref(false);
+
 async function hostStart() {
-	await askServer('start-game', socket);
+	if (isProcessing.value) return;
+	isProcessing.value = true;
+	
+	try {
+		await askServer('start-game', socket);
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 function handleBeforeUnload(event) {
 	event.preventDefault();
 }
 
+const gridUpdateInterval = ref([]);
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
 		await router.push('/');
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
+	socket.emit('ask-server', 'init-piece');
 	await fetchOtherPlayerGrids();
 
-	const gridUpdateInterval = setInterval(() => {
+	gridUpdateInterval.value = setInterval(() => {
 		if (!gameOver.value)
 			fetchOtherPlayerGrids();
 	}, getIntervalDelay());
-
-	onUnmounted(() => {
-		clearInterval(gridUpdateInterval);
-	});
+});
+onUnmounted(() => {
+	clearInterval(gridUpdateInterval.value);
 });
 
 onBeforeRouteLeave((to, from, next) => {

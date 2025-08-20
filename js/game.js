@@ -13,7 +13,7 @@ import {
 	refillBag
 } from './class.js';
 
-export function startGame(socket, instance_player, instance_game, random) {
+export function gameLogic(socket, instance_player, instance_game, random) {
 	
 	// INIT PART
 	const ROWS = 20;
@@ -27,7 +27,8 @@ export function startGame(socket, instance_player, instance_game, random) {
 
 	// Piece:
 	let activePiece = null;
-	let nextPiece = null;
+	let nextPiece = getNextTetromino();
+	socket.emit('flattenedNextPiece', getNextGrid().flat());
 
 	let permanentGrid = Array.from({ length: ROWS }, () => Array(COLS).fill("empty"));
 	instance_game.addGrid(instance_player, permanentGrid);
@@ -140,7 +141,7 @@ export function startGame(socket, instance_player, instance_game, random) {
 
 		activePiece = nextPiece;
 		nextPiece = getNextTetromino();
-		socket.emit('flattenedNextPiece', getNextGrid());
+		socket.emit('flattenedNextPiece', getNextGrid().flat());
 
 		if (linesCleared > 0)
 			startInterval();
@@ -154,7 +155,7 @@ export function startGame(socket, instance_player, instance_game, random) {
 		if (!moved)
 			handleLockPiece();
 
-		socket.emit('flattenedGrid', getVisualGrid());
+		socket.emit('flattenedGrid', getVisualGrid().flat());
 	}
 
 	function getIntervalDelay() {
@@ -183,21 +184,29 @@ export function startGame(socket, instance_player, instance_game, random) {
 			lines = 0;
 			gameOver = false;
 			permanentGrid = Array(COLS).fill("empty");
-			socket.emit('getLines', lines);
 			socket.emit('getGameOver', gameOver);
 		}
 	}
 
-	// LAUNCH PART
-	if (isGameRunning)
-		return;
-	isGameRunning = true;
-	socket.emit('getGameRunning', isGameRunning);
-	startInterval();
+	function startGame() {
+		// LAUNCH PART
+		if (isGameRunning)
+			return;
+		isGameRunning = true;
+		activePiece = nextPiece;
+		nextPiece = getNextTetromino();
+		socket.emit('flattenedNextPiece', getNextGrid().flat());
+		socket.emit('getGameRunning', isGameRunning);
+		startInterval();
+	}
 
 	return {
 		handleMovePiece,
 		handleHardDrop,
 		handleRotatePiece,
+		getVisualGrid,
+		getNextGrid,
+		startGame,
+		stopGame,
 	};
 }

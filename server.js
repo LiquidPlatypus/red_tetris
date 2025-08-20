@@ -16,7 +16,7 @@ import {
     refillBag
 } from './js/class.js';
 import {
-    startGame
+    gameLogic
 } from './js/game.js';
 
 function getLocalIP() {
@@ -98,6 +98,7 @@ io.on('connection', (socket) => {
             io.to(`${seed}`).emit('server-log', `${instance_player.getUsername()} join the game !`);
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
+            game = gameLogic(socket, instance_player, instance_game, random);
         } else {
             socket.emit('error', 'La partie est en cours chef !')
         }
@@ -150,13 +151,22 @@ io.on('connection', (socket) => {
                     }
                 });
             }
+            socket.emit('response', true);
+            return;
+        }
+        if (signal === 'init-grid' && game) {
+            socket.emit('flattenedGrid', game.getVisualGrid().flat());
+            return;
+        }
+        if (signal === 'init-piece' && game) {
+            socket.emit('flattenedNextPiece', game.getNextGrid().flat());
+            return;
         }
     });
 
     socket.on('launch', () => {
-        console.log('lololo');
         if (instance_game && instance_player && instance_game.getSeed('')) {
-            game = startGame(socket, instance_player, instance_game, random);
+            game.startGame();
         }
     });
 
@@ -173,6 +183,7 @@ io.on('connection', (socket) => {
     socket.on('finish', (score) => {
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), false, instance_player.getId());
         instance_game.rankPlayer(score, instance_player);
+        game.stopGame();
         // if not the last to finish: don't send ending signal
         if (instance_game.gameStatus() === false) {
             const rank = instance_game.getRank();
