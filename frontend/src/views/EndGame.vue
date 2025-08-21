@@ -132,10 +132,12 @@ main {
 }
 
 .winner-box {
+	display: grid;
 	font-size: 2.5rem;
 	text-align: center;
 	color: #555555;
 	background-color: #88ac28;
+	padding: 0.5rem;
 }
 
 .losers {
