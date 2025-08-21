@@ -68,9 +68,10 @@ const losers = computed(() => rank.value.slice(0, -1));
 	<main class="endgame">
 		<div v-if="allPlayersFinished" class="end-screen">
 			<!-- Vainqueur en haut -->
-			<Window title="Winner" variant="results" class="winner">
+			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
 					<span class="winner-name">{{ winner?.username }}</span>
+					<span>WINNER !!!!</span>
 				</div>
 			</Window>
 
@@ -81,12 +82,13 @@ const losers = computed(() => rank.value.slice(0, -1));
 					:key="username"
 					:title="username"
 					variant="results"
+					customClass="fix-overflow-endgame"
 				>
 					<h2>{{ username }}</h2>
 				</Window>
 			</div>
 
-			<AppButton>
+			<AppButton @click="retry">
 				RETURN TO LOBBY
 			</AppButton>
 		</div>
@@ -120,23 +122,26 @@ main {
 }
 
 .winner {
-	width: 100%;
-	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 30rem;
+	height: 10rem;
+	padding: 5rem;
 }
 
 .winner-box {
-	font-size: 1.8rem;
-	font-weight: bold;
+	font-size: 2.5rem;
 	text-align: center;
-	color: gold;
+	color: #555555;
+	background-color: #88ac28;
 }
 
 .losers {
 	display: grid;
 	grid-template-columns: repeat(2, 10rem);
 	gap: 1rem;
-	width: 100%;
-	max-width: 900px;
 }
 
 .dot-typing {
