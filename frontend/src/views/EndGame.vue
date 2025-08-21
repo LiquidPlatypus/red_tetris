@@ -138,6 +138,8 @@ main {
 	color: #555555;
 	background-color: #88ac28;
 	padding: 0.5rem;
+	border-top: 2px solid black;
+	border-left: 2px solid black;
 }
 
 .losers {
