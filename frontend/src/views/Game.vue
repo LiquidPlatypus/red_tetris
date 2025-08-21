@@ -121,25 +121,12 @@ async function getUserGrid() {
 askServer('start-game', socket).then((res) => {
 	console.log(`Game status: ${res}`);
 });
-socket.on('launch', ({ startAt }) => {
-	const delay = startAt - Date.now();
+socket.on('launch', (startAt) => {
+	const delay = startAt - Date.now()
 	setTimeout(() => {
 		socket.emit('launch');
 	}, delay);
 });
-
-const isProcessing = ref(false);
-
-async function hostStart() {
-	if (isProcessing.value) return;
-	isProcessing.value = true;
-	
-	try {
-		await askServer('start-game', socket);
-	} catch (error) {
-		console.error(error);
-	}
-}
 
 function handleBeforeUnload(event) {
 	event.preventDefault();

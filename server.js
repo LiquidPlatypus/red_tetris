@@ -95,6 +95,11 @@ io.on('connection', (socket) => {
         if (!instance_game)
             socket.emit('error', 'Game not exist');
         else if (instance_game.getCurrent() === false) {
+            // for (const player of instance_game.getPlayerList()) {
+            //     if (player.getUsername() === username) {
+            //         return;
+            //     }
+            // }
             random = createSeededRandom(instance_game.getInteger());
             if (instance_player && instance_player.getUsername() === '')
                 instance_player = new Player(username, false, true, socket.id);
@@ -148,7 +153,8 @@ io.on('connection', (socket) => {
         }
         if (signal === 'start-game') {
             if (instance_player.getHost() && instance_game.getSeed() !== '') {
-                io.to(`${instance_game.getSeed()}`).emit('launch', { startAt: Date.now() + 3000 });
+                const delay = Date.now() + 3000;
+                io.to(`${instance_game.getSeed()}`).emit('launch', delay);
                 socket.emit('response', true);
                 return;
             }
@@ -228,7 +234,6 @@ io.on('connection', (socket) => {
     socket.on('refreshme', () => {
         if (instance_game) {
             const new_player = instance_game.getPlayer(instance_player.getId());
-            console.log(new_player.getUsername());
             instance_player = new_player;
         }
     });
