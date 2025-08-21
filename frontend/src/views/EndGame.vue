@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, ref, onMounted } from "vue";
+import { onBeforeUnmount, ref, onMounted, computed } from "vue";
 import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
@@ -8,6 +8,13 @@ import { askServer } from "@/utils";
 
 const username = ref('');
 const router = useRouter();
+
+const positions = [
+	{class: "top-left"},
+	{class: "top-right"},
+	{class: "bottom-left"},
+	{class: "bottom-right"},
+]
 
 function retry() {
 	socket.emit('return-lobby');
@@ -53,44 +60,46 @@ socket.on('rank', (data) => {
 	allPlayersFinished.value = true;
 });
 
+const winner = computed(() => rank.value.at(-1))
+const losers = computed(() => rank.value.slice(0, -1));
 </script>
 
 <template>
-<main class="endgame">
-	<Window title="Results" variant="results" id="game-over">
-		<div id="result">
-			<template v-if="allPlayersFinished">
-				<table id="result-tab">
-					<thead class="table-head">
-					<tr>
-						<th>Username</th>
-						<th>Score</th>
-					</tr>
-					</thead>
-					<tbody>
-					<tr v-for="{ username, score } in rank" :key="username">
-						<td :title="username">{{ username }}</td>
-						<td>{{ score }}</td>
-					</tr>
-					</tbody>
-				</table>
-			</template>
+	<main class="endgame">
+		<div v-if="allPlayersFinished" class="end-screen">
+			<!-- Vainqueur en haut -->
+			<Window title="Winner" variant="results" class="winner">
+				<div class="winner-box">
+					<span class="winner-name">{{ winner?.username }}</span>
+				</div>
+			</Window>
 
-			<template v-else>
+			<!-- Les autres joueurs en dessous -->
+			<div class="losers">
+				<Window
+					v-for="{ username } in losers"
+					:key="username"
+					:title="username"
+					variant="results"
+				>
+					<h2>{{ username }}</h2>
+				</Window>
+			</div>
+
+			<AppButton>
+				RETURN TO LOBBY
+			</AppButton>
+		</div>
+
+		<div v-else>
+			<Window title="Results" variant="results" id="game-over">
 				<h2>
 					WAITING FOR OTHER PLAYERS TO FINISH
 					<span class="dot-typing"></span>
 				</h2>
-			</template>
+			</Window>
 		</div>
-	</Window>
-
-	<div class="controls">
-		<AppButton @click="retry">RETURN LOBBY</AppButton>
-	</div>
-
-	<RouterView />
-</main>
+	</main>
 </template>
 
 <style scoped>
@@ -102,26 +111,32 @@ main {
 	padding: 20px;
 }
 
-.controls {
-	margin-top: 0.5rem;
+.end-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
 }
 
-::v-deep(.table-head) {
-	background-color: #88ac28;
-	color: blue;
-	border-top: 2px black solid;
-	border-left: 2px black solid;
+.winner {
+	width: 100%;
+	text-align: center;
 }
 
-::v-deep(#result-tab) {
-	color: yellow;
-	border-collapse: collapse;
-	border-left: 2px black solid;
+.winner-box {
+	font-size: 1.8rem;
+	font-weight: bold;
+	text-align: center;
+	color: gold;
 }
 
-::v-deep(#result-tab th),
-::v-deep(#result-tab td) {
-	padding: 8px;
+.losers {
+	display: grid;
+	grid-template-columns: repeat(2, 10rem);
+	gap: 1rem;
+	width: 100%;
+	max-width: 900px;
 }
 
 .dot-typing {
