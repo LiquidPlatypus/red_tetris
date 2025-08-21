@@ -84,7 +84,7 @@ const losers = computed(() => rank.value.slice(0, -1));
 					variant="results"
 					customClass="fix-overflow-endgame"
 				>
-					<h2>{{ username }}</h2>
+					<h2 class="losers-name">{{ username }}</h2>
 				</Window>
 			</div>
 
@@ -144,8 +144,15 @@ main {
 
 .losers {
 	display: grid;
-	grid-template-columns: repeat(2, 10rem);
-	gap: 1rem;
+	grid-template-columns: repeat(2, 8rem);
+	column-gap: 25rem;
+	row-gap: 4rem;
+}
+
+.losers-name {
+	font-size: 1rem;
+	text-align: center;
+	padding: 0.1rem;
 }
 
 .dot-typing {
