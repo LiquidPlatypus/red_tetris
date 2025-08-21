@@ -28,7 +28,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 	// Piece:
 	let activePiece = null;
 	let nextPiece = getNextTetromino();
-	socket.emit('flattenedNextPiece', getNextGrid().flat());
+	getFlatNextGrid();
 
 	let permanentGrid = Array.from({ length: ROWS }, () => Array(COLS).fill("empty"));
 	instance_game.addGrid(instance_player, permanentGrid);
@@ -38,7 +38,12 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 	}
 
 	function getNextGrid() {
-		return calculateNextPieceGrid(nextPiece, 5);
+		return calculateNextPieceGrid(nextPiece, 4);
+	}
+	function getFlatNextGrid() {
+		const debug = getNextGrid();
+		console.log(debug);
+		socket.emit('flattenedNextPiece', debug);
 	}
 
 	function getNextTetromino() {
@@ -141,7 +146,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 
 		activePiece = nextPiece;
 		nextPiece = getNextTetromino();
-		socket.emit('flattenedNextPiece', getNextGrid().flat());
+		getFlatNextGrid();
 
 		if (linesCleared > 0)
 			startInterval();
@@ -195,7 +200,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 		isGameRunning = true;
 		activePiece = nextPiece;
 		nextPiece = getNextTetromino();
-		socket.emit('flattenedNextPiece', getNextGrid().flat());
+		getFlatNextGrid();
 		socket.emit('getGameRunning', isGameRunning);
 		startInterval();
 	}

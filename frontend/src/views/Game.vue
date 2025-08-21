@@ -66,9 +66,6 @@ const flattenedOtherPlayers = computed(() => {
 const flattenedNextPiece = ref([]);
 socket.emit('ask-server', 'init-piece');
 socket.on('flattenedNextPiece', (flatNextPiece) => {
-	console.log("NASM RECEIVED >>>:", flatNextPiece);
-	console.log("typeof is", typeof flatNextPiece);
-	console.log("Array.isArray ?", Array.isArray(flatNextPiece));
 	flattenedNextPiece.value = flatNextPiece;
 });
 
