@@ -1,8 +1,12 @@
-<script setup lang="ts">
-const props = defineProps<{
-	label?: string;
-	type?: "button" | "submit" | "reset";
-}>();
+<script setup>
+defineProps({
+	label: { type: String, required: false },
+	type: {
+		type: String,
+		required: false,
+		validator: (value) => ["button", "submit", "reset"].includes(value)
+	}
+})
 </script>
 
 <template>

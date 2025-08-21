@@ -1,36 +1,20 @@
 <script setup>
-import { onBeforeUnmount, ref, onMounted } from "vue";
+import { onBeforeUnmount, ref, onMounted, computed } from "vue";
 import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
+import Window from "@/components/Window.vue";
 import { askServer } from "@/utils";
 
-const seed = ref('');
 const username = ref('');
-
-socket.on('rank', (rank) => {
-	document.getElementById("result").innerHTML = `
-		<table id="result-tab">
-			<thead class="table-head">
-				<tr>
-					<th>Username</th>
-					<th>Score</th>
-				</tr>
-			</thead>
-			<tbody>
-				${rank.map(({score, username}) => `
-					<tr>
-						<td title="${username}">${username}</td>
-						<td>${score}</td>
-					</tr>
-				`).join('')}
-			</tbody>
-		</table>
-	`;
-});
-
-
 const router = useRouter();
+
+const positions = [
+	{class: "top-left"},
+	{class: "top-right"},
+	{class: "bottom-left"},
+	{class: "bottom-right"},
+]
 
 function retry() {
 	socket.emit('return-lobby');
@@ -49,7 +33,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 	if (confirmLeave) {
 		next();
 		socket.emit('return');
-		router.push('/');
+		await router.push('/');
 	} else {
 		next(false);
 	}
@@ -61,32 +45,60 @@ function handleBeforeUnload(event) {
 
 onMounted(async () => {
 	if (await askServer('game-exist', socket) === false)
-		router.push('/');
+		await router.push('/');
 	window.addEventListener("beforeunload", handleBeforeUnload);
 });
 onBeforeUnmount(() => {
 	window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
+const rank = ref([]);
+const allPlayersFinished = ref(false);
+
+socket.on('rank', (data) => {
+	rank.value = data;
+	allPlayersFinished.value = true;
+});
+
+const winner = computed(() => rank.value.at(-1))
+const losers = computed(() => rank.value.slice(0, -1));
 </script>
 
 <template>
 	<main class="endgame">
-		<div id="game-over">
-			<div id="result">
-				<!-- TABLEAU -->
-				<h2>WAITING FOR OTHER PLAYERS TO FINISH
-					<span class="dot-typing"></span>
-				</h2>
+		<div v-if="allPlayersFinished" class="end-screen">
+			<!-- Vainqueur en haut -->
+			<Window title="Winner" variant="results" class="winner">
+				<div class="winner-box">
+					<span class="winner-name">{{ winner?.username }}</span>
+				</div>
+			</Window>
+
+			<!-- Les autres joueurs en dessous -->
+			<div class="losers">
+				<Window
+					v-for="{ username } in losers"
+					:key="username"
+					:title="username"
+					variant="results"
+				>
+					<h2>{{ username }}</h2>
+				</Window>
 			</div>
 
-			<div class="window-title">Results</div>
+			<AppButton>
+				RETURN TO LOBBY
+			</AppButton>
 		</div>
 
-		<div class="controls">
-			<AppButton @click="retry">RETURN LOBBY</AppButton>
+		<div v-else>
+			<Window title="Results" variant="results" id="game-over">
+				<h2>
+					WAITING FOR OTHER PLAYERS TO FINISH
+					<span class="dot-typing"></span>
+				</h2>
+			</Window>
 		</div>
-		<RouterView />
 	</main>
 </template>
 
@@ -99,69 +111,32 @@ main {
 	padding: 20px;
 }
 
-#game-over {
-	background-color: #214132;
-	border-top: 15px solid #3365ff;
-	border-left: 5px solid lightgray;
-	border-right: 10px solid lightgray;
-	border-bottom: 10px solid lightgray;
+.end-screen {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
 	align-items: center;
-	position: relative;
-	box-shadow: 2px 2px black;
+	gap: 1rem;
+	width: 100%;
 }
 
-#game-over::before {
-	content: "";
-	position: absolute;
-	top: -15px; /* pour aligner avec le border-top */
-	left: -4.7px; /* dépassement à gauche */
-	width: calc(100% + 15px); /* dépassement à droite aussi */
-	height: 15px; /* même hauteur que ton border-top */
-	background-color: blue; /* même couleur que ton border-top */
-	border-top: 3px solid lightgrey;
-	border-bottom: 2px solid lightgrey;
-	border-left: 3px solid lightgrey;
-	border-right: 3px solid lightgrey;
-	box-sizing: border-box;
-}
-
-.window-title {
-	position: relative;
-	top: -143.5px;
-	left: -46px;
+.winner {
+	width: 100%;
 	text-align: center;
+}
+
+.winner-box {
+	font-size: 1.8rem;
 	font-weight: bold;
-	font-size: 12px;
-	color: white;
+	text-align: center;
+	color: gold;
 }
 
-.controls {
-	margin-top: 0.5rem;
-}
-
-h2 {
-	color: red;
-}
-
-::v-deep(.table-head) {
-	background-color: darkolivegreen;
-	color: blue;
-	border: 3px red solid;
-}
-
-::v-deep(#result-tab) {
-	border: 1px solid red;
-	color: yellow;
-	border-collapse: collapse;
-}
-
-::v-deep(#result-tab th),
-::v-deep(#result-tab td) {
-	border: 1px solid red;
-	padding: 8px;
+.losers {
+	display: grid;
+	grid-template-columns: repeat(2, 10rem);
+	gap: 1rem;
+	width: 100%;
+	max-width: 900px;
 }
 
 .dot-typing {

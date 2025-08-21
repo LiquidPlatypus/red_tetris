@@ -4,6 +4,8 @@ import socket from '@/socket';
 import {useRouter, onBeforeRouteLeave} from "vue-router";
 
 import AppButton from "@/components/AppButton.vue";
+import Window from "@/components/Window.vue";
+
 import { askServer } from "../utils.js";
 
 const router = useRouter();
@@ -187,13 +189,14 @@ onBeforeUnmount(() => {
 <template>
 	<main class="game">
 		<div class="game-layout">
-			<div
+			<!-- Autres joueurs -->
+			<Window
 				v-for="(player, index) in flattenedOtherPlayers"
 				:key="player.username"
-				class="other-players"
 				:class="positions[index]?.class"
+				:title="player.username"
+				variant="username"
 			>
-				<div class="username">{{ player.username }}</div>
 				<div class="tetris-grid other-player-grid">
 					<div
 						v-for="(cell, cellIndex) in player.flattened"
@@ -202,32 +205,38 @@ onBeforeUnmount(() => {
 						class="cell small-cell"
 					></div>
 				</div>
-			</div>
+			</Window>
 
 			<!-- Terrain principal -->
-			<div id="game-container">
-				<div id="game-zone" class="tetris-grid">
-					<div
-						v-for="(cell, index) in flattenedGrid"
-						:key="index"
-						:class="cell"
-						class="cell"
-					></div>
-				</div>
-
-				<div class="username">{{ username }}</div>
-				<div class="sidebar">
-					<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
-					<div id="next-piece" class="infos pixel-corners next-piece-grid">
+			<Window
+				:title="username"
+				variant="username"
+				id="game-container"
+				customClass="fix-overflow"
+			>
+				<div class="game-content">
+					<div id="game-zone" class="tetris-grid">
 						<div
-							v-for="(cell_next_piece, index) in flattenedNextPiece"
+							v-for="(cell, index) in flattenedGrid"
 							:key="index"
-							:class="cell_next_piece"
-							class="cell_next_piece"
+							:class="cell"
+							class="cell"
 						></div>
 					</div>
+
+					<div class="sidebar">
+						<div class="infos pixel-corners" id="lines">LINES {{ lines }}</div>
+						<div id="next-piece" class="infos pixel-corners next-piece-grid">
+							<div
+								v-for="(cell_next_piece, index) in flattenedNextPiece"
+								:key="index"
+								:class="cell_next_piece"
+								class="cell_next_piece"
+							></div>
+						</div>
+					</div>
 				</div>
-			</div>
+			</Window>
 		</div>
 
 		<div class="controls">
@@ -256,21 +265,6 @@ main {
 	justify-items: center;
 }
 
-.username {
-	position: relative;
-	top: -16px;
-	left: -27px;
-	text-align: center;
-	font-weight: bold;
-	font-size: 12px;
-	color: white;
-}
-
-#game-container .username {
-	top: -16.5px;
-	left: -208.5px;
-}
-
 .other-player-grid {
 	grid-template-columns: repeat(10, 10px) !important;
 	grid-template-rows: repeat(20, 10px) !important;
@@ -286,34 +280,23 @@ main {
 }
 
 #game-container {
-	background-color: #214132;
-	border-top: 15px solid #3365ff;
-	border-left: 5px solid lightgrey;
-	border-right: 5px solid lightgrey;
-	border-bottom: 10px solid lightgrey;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: flex-start;
-	gap: 0.5rem;
-	position: relative;
-	box-shadow: 2px 2px black;
 	grid-area: 1 / 2 / 3 / 3;
 }
 
-#game-container::before {
-	content: "";
-	position: absolute;
-	top: -15px;
-	left: -4.5px;
-	width: calc(100% + 9px);
-	height: 15px;
-	background-color: blue;
-	border-top: 3px solid lightgrey;
-	border-bottom: 2px solid lightgrey;
-	border-left: 3px solid lightgrey;
-	border-right: 3px solid lightgrey;
-	box-sizing: border-box;
+.game-content {
+	display: flex;
+	flex-direction: row;
+	gap: 1rem;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+.other-players .username {
+	left: 52%;
 }
 
 .tetris-grid {
@@ -367,31 +350,6 @@ main {
 	grid-column: 1 / 4;
 	grid-row: 4;
 	text-align: center;
-}
-
-.other-players {
-	background-color: #214132;
-	border-top: 15px solid #3365ff;
-	border-left: 5px solid lightgrey;
-	border-right: 5px solid lightgrey;
-	border-bottom: 10px solid lightgrey;
-	position: relative;
-	box-shadow: 2px 2px black;
-}
-
-.other-players::before {
-	content: "";
-	position: absolute;
-	top: -15px;
-	left: -4.5px;
-	width: calc(100% + 9px);
-	height: 17px;
-	background-color: blue;
-	border-top: 3px solid lightgrey;
-	border-bottom: 2px solid lightgrey;
-	border-left: 3px solid lightgrey;
-	border-right: 3px solid lightgrey;
-	box-sizing: border-box;
 }
 
 .pause-overlay {

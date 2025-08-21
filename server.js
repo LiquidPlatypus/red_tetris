@@ -31,6 +31,7 @@ function getLocalIP() {
 }
 function clearPlayer(instance_game, instance_player) {
     if (instance_game && instance_game.getSeed() !== '') {
+	    instance_game.removeRank(instance_player);
         instance_game.removePlayer(instance_player);
         const player_list = instance_game.getPlayerList();
         io.to(`${instance_game.getSeed()}`).emit('server-log', `${instance_player.getUsername()} left the game !`);
@@ -105,7 +106,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    /// GAME SERVER INFO    
+    /// GAME SERVER INFO
 
     // Getter and Setter
     socket.on('input', (key) => {
