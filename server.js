@@ -39,6 +39,7 @@ function clearPlayer(instance_game, instance_player) {
         else if (instance_player.getHost() === true) {
             const element = player_list.values().next().value;
             instance_game.removePlayer(element);
+            instance_game.removeRank(instance_player);
             const new_host = new Player(element.getUsername(), true, true, element.getId());
             instance_game.addPlayer(new_host);
             io.to(element.getId()).emit('refresh-player'); // If new host defined, refresh his status on his side
@@ -144,14 +145,12 @@ io.on('connection', (socket) => {
             return;
         }
         if (signal === 'start-game') {
-            if (instance_player.getHost()) {
-                io.in(instance_game.getSeed()).fetchSockets().then((sockets) => {
-                    for (const s of sockets) {
-                        s.emit('launch');
-                    }
-                });
+            if (instance_player.getHost() && instance_game.getSeed() !== '') {
+                io.to(`${instance_game.getSeed()}`).emit('launch', { startAt: Date.now() + 3000 });
+                socket.emit('response', true);
+                return;
             }
-            socket.emit('response', true);
+            socket.emit('response', false);
             return;
         }
         if (signal === 'init-grid' && game) {
@@ -160,6 +159,10 @@ io.on('connection', (socket) => {
         }
         if (signal === 'init-piece' && game) {
             socket.emit('flattenedNextPiece', game.getNextGrid().flat());
+            return;
+        }
+        if (signal === 'stop-game' && game) {
+            game.stopGame();
             return;
         }
     });
@@ -183,7 +186,6 @@ io.on('connection', (socket) => {
     socket.on('finish', (score) => {
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), false, instance_player.getId());
         instance_game.rankPlayer(score, instance_player);
-        game.stopGame();
         // if not the last to finish: don't send ending signal
         if (instance_game.gameStatus() === false) {
             const rank = instance_game.getRank();

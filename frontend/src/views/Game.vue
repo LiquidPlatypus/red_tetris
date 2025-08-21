@@ -80,9 +80,6 @@ function getIntervalDelay() {
 function handleKeyPress(e) {
 	socket.emit('input', e.code);
 }
-socket.on('launch', () => {
-	socket.emit('launch');
-});
 
 async function fetchOtherPlayerGrids() {
 	try {
@@ -118,6 +115,17 @@ async function getUserGrid() {
 
 // ======== INITIALISATION ========
 
+
+askServer('start-game', socket).then((res) => {
+	console.log(`Game status: ${res}`);
+});
+socket.on('launch', ({ startAt }) => {
+	const delay = startAt - Date.now();
+	setTimeout(() => {
+		socket.emit('launch');
+	}, delay);
+});
+
 const isProcessing = ref(false);
 
 async function hostStart() {
@@ -150,6 +158,7 @@ onMounted(async () => {
 	}, getIntervalDelay());
 });
 onUnmounted(() => {
+	socket.emit('ask-server', 'stop-game');
 	clearInterval(gridUpdateInterval.value);
 });
 
@@ -222,7 +231,6 @@ onBeforeUnmount(() => {
 		</div>
 
 		<div class="controls">
-			<AppButton v-if="!isGameRunning && !gameOver" @click="hostStart">START GAME</AppButton>
 			<!-- AJOUTER CONTROLES -->
 		</div>
 
