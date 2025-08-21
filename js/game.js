@@ -178,6 +178,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 	}
 
 	function stopGame() {
+		if (!isGameRunning) return;
 		isGameRunning = false;
 		socket.emit('getGameRunning', isGameRunning);
 		if (intervalId !== null) {

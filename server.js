@@ -3,6 +3,10 @@ import http from'http';
 import { Server } from'socket.io';
 import os from'os';
 import path from'path';
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import { 
     Player,
@@ -10,10 +14,7 @@ import {
     getGame,
     addGame,
     removeGame,
-    TETROMINOS,
-    Piece,
     createSeededRandom,
-    refillBag
 } from './js/class.js';
 import {
     gameLogic
@@ -59,10 +60,10 @@ const io = new Server(server, {
 
 app.use(express.static('frontend/dist'));
 app.get('/:room', (req, res) => {
-  res.redirect('/');
+    res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 app.get('/:room/:username', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+    res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
 io.on('connection', (socket) => {

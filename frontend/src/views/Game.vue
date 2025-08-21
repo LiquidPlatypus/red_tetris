@@ -181,6 +181,7 @@ onBeforeRouteLeave((to, from, next) => {
 });
 
 onBeforeUnmount(() => {
+	window.removeEventListener("keydown", handleKeyPress);
 	window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
