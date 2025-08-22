@@ -26,6 +26,11 @@ onBeforeRouteLeave((to, from, next) => {
 		next();
 		return;
 	}
+	if (to.path === `/${seed}`) {
+		next();
+		socket.emit('return');
+		return;
+	}
 	const confirmLeave = window.confirm("Rage quit ?");
 	if (confirmLeave) {
 		next();

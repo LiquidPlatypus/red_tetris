@@ -157,8 +157,6 @@ export class Game {
 			},
 			removeRank: (player) => {
 				ranking.delete(player.getId());
-				players.delete(player.getId());
-				players.set(player.getId(), player);
 			},
 			getRank: () => ranking,
 			gameStatus: () => {
@@ -170,29 +168,23 @@ export class Game {
 			},
 			getGridList: (except_player = undefined) => {
 				if (except_player !== undefined) {
-					return new Map( [...grids.entries()].filter(([, value]) => value.getId() !== except_player.getId()) );
+					return new Map( [...grids.entries()].filter(([key]) => key !== except_player.getId()) );
 				} else {
 					return grids;
 				}
 			},
 			addGrid: (player, grid) => {
-				for (const [key, value] of grids.entries()) {
-					if (value.getId() === player.getId()) {
-						grids.delete(key);
-						break;
-					}
-				}
-				grids.set(grid, player);
+				grids.delete(player.getId());
+				grids.set(player.getId(), grid);
+			},
+			removeGrid: (player) => {
+				grids.delete(player.getId());
 			},
 		};
 
 		return instance;
 	}
 };
-
-//   return new Map(
-//     [...myMap.entries()].filter(([key, value]) => key !== keyToRemove)
-//   );
 
 export const addGame = (game) => {
 	console.log(`${game.getSeed()}: game added`);

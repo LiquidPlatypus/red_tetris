@@ -34,6 +34,7 @@ function clearPlayer(instance_game, instance_player) {
     if (instance_game && instance_game.getSeed() !== '') {
 	    instance_game.removeRank(instance_player);
         instance_game.removePlayer(instance_player);
+        instance_game.removeGrid(instance_player);
         const player_list = instance_game.getPlayerList();
         io.to(`${instance_game.getSeed()}`).emit('server-log', `${instance_player.getUsername()} left the game !`);
         if (player_list.size === 0)
@@ -41,7 +42,6 @@ function clearPlayer(instance_game, instance_player) {
         else if (instance_player.getHost() === true) {
             const element = player_list.values().next().value;
             instance_game.removePlayer(element);
-            instance_game.removeRank(instance_player);
             const new_host = new Player(element.getUsername(), true, true, element.getId());
             instance_game.addPlayer(new_host);
             io.to(element.getId()).emit('refresh-player'); // If new host defined, refresh his status on his side
@@ -78,6 +78,7 @@ io.on('connection', (socket) => {
         if (getGame(seed) === undefined) {
             instance_game = new Game(seed);
             addGame(instance_game);
+            if (username.length > 12) username = username.substring(0, 12);
             instance_player = new Player(username, true, true, instance_player.getId());
             console.log(`${seed} created !`);
             socket.emit('lobby-join', {
@@ -95,11 +96,13 @@ io.on('connection', (socket) => {
         if (!instance_game)
             socket.emit('error', 'Game not exist');
         else if (instance_game.getCurrent() === false) {
-            // for (const player of instance_game.getPlayerList()) {
-            //     if (player.getUsername() === username) {
-            //         return;
-            //     }
-            // }
+            for (const playerId of instance_game.getPlayerList().keys()) {
+                if (instance_game.getPlayer(playerId).getUsername() === username)  {
+                    socket.emit('go-to', `/${instance_game.getSeed()}`, 'This username already taked');
+                    return;
+                }
+            }
+            if (username.length > 12) username = username.substring(0, 12);
             random = createSeededRandom(instance_game.getInteger());
             if (instance_player && instance_player.getUsername() === '')
                 instance_player = new Player(username, false, true, socket.id);
@@ -127,11 +130,16 @@ io.on('connection', (socket) => {
     socket.on('get-grids', () => {
         if (instance_game) {
             const grids = instance_game.getGridList(instance_player);
-            const grid_list = Array.from(grids.entries()).map(([grid, player]) => ({
-                grid: grid,
-                username: player.getUsername(),
-                status: player.getStatus(),
-            }));
+            const grid_list = Array.from(grids.entries())
+                .filter(([playerId, grid]) => instance_game.getPlayer(playerId))
+                .map(([playerId, grid]) => {
+                    const player = instance_game.getPlayer(playerId);
+                    return {
+                        grid,
+                        username: player.getUsername(),
+                        status: player.getStatus(),
+                    };
+                });
             socket.emit('grids', grid_list);
         }
     });
@@ -210,6 +218,7 @@ io.on('connection', (socket) => {
             instance_game.setCurrent(false);
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
         instance_game.removeRank(instance_player);
+        instance_game.removeGrid(instance_player);
         socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
     });
 
@@ -217,6 +226,8 @@ io.on('connection', (socket) => {
 
     socket.on('return', () => {
         if (instance_game) {
+            if (game)
+                game.stopGame();
             clearPlayer(instance_game, instance_player);
             socket.leave(instance_game.getSeed());
             instance_player = new Player('', false, false, socket.id);
