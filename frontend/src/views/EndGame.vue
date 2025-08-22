@@ -4,6 +4,7 @@ import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 import Window from "@/components/Window.vue";
+import TetrisText from "@/components/TetrisText.vue";
 import { askServer } from "@/utils";
 
 const username = ref('');
@@ -70,8 +71,8 @@ const losers = computed(() => rank.value.slice(0, -1));
 			<!-- Vainqueur en haut -->
 			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
-					<span class="winner-name">{{ winner?.username }}</span>
-					<span>WINNER !!!!</span>
+					<TetrisText text="{{ winner?.username }}"></TetrisText>
+					<TetrisText text="WINNER !!!!"></TetrisText>
 				</div>
 			</Window>
 
@@ -122,24 +123,34 @@ main {
 }
 
 .winner {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	width: 30rem;
-	height: 10rem;
-	padding: 5rem;
+	position: relative;
+	padding: 0;
+	width: 50rem;
+	height: 17rem;
 }
 
 .winner-box {
+	position: absolute;
+	inset: 0.75rem;
+	box-sizing: border-box;
 	display: grid;
-	font-size: 2.5rem;
+	gap: 2rem;
+	place-content: center;
 	text-align: center;
+	font-size: 2.5rem;
 	color: #555555;
 	background-color: #88ac28;
-	padding: 0.5rem;
 	border-top: 2px solid black;
 	border-left: 2px solid black;
+}
+
+@keyframes blinker {
+	0%, 49% {
+		opacity: 1;
+	}
+	50%, 100% {
+		opacity: 0;
+	}
 }
 
 .losers {
