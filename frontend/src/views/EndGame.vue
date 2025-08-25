@@ -71,7 +71,7 @@ const losers = computed(() => rank.value.slice(0, -1));
 			<!-- Vainqueur en haut -->
 			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
-					<TetrisText text="{{ winner?.username }}"></TetrisText>
+					<TetrisText :text="winner?.username"></TetrisText>
 					<TetrisText text="WINNER !!!!"></TetrisText>
 				</div>
 			</Window>
