@@ -149,6 +149,7 @@ export class Game {
 				players.delete(player.getId());
 			},
 			getPlayerList: () => players,
+			getPlayerCount: () => players.size,
 			getInteger: () => integer,
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());
