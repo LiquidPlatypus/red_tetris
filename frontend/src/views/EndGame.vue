@@ -184,6 +184,11 @@ main {
 	padding-right: 5px;
 }
 
+.loser {
+	width: 6rem;
+	height: 4rem;
+}
+
 .loser-0 { grid-area: 1 / 1; } /* haut gauche */
 .loser-1 { grid-area: 1 / 3; } /* haut droit */
 .loser-2 { grid-area: 3 / 1; } /* bas gauche */
