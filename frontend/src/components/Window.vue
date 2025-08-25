@@ -64,6 +64,7 @@ defineProps({
 }
 .fix-overflow-endgame .win95-title-bar {
 	left: -4.5px;
+	right: -4.5px;
 }
 
 
