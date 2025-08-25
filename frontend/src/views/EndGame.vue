@@ -157,6 +157,7 @@ main {
 .losers {
 	display: grid;
 	grid-template-columns: repeat(2, 8rem);
+	grid-template-rows: repeat(3, 5rem);
 	column-gap: 25rem;
 	row-gap: 4rem;
 }
