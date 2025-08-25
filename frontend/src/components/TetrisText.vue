@@ -252,7 +252,7 @@ const letters = computed(() =>
 .tetris-font-block {
 	width: 7px;
 	height: 10px;
-	background: #555555;
+	background: #3D3D3D;
 	position: relative;
 
 	background-image:
