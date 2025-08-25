@@ -133,7 +133,7 @@ const isProcessing = ref(false);
 async function hostStart() {
 	if (isProcessing.value) return;
 	isProcessing.value = true;
-	
+
 	try {
 		await askServer('start-game', socket);
 	} catch (error) {
@@ -351,18 +351,6 @@ main {
 	grid-column: 1 / 4;
 	grid-row: 4;
 	text-align: center;
-}
-
-.pause-overlay {
-	position: absolute;
-	top: 48%;
-	left: 31.5%;
-	transform: translate(-50%, -50%);
-	font-size: 2rem;
-	font-weight: bold;
-	color: RED;
-	z-index: 10;
-	animation: blinker 1s linear infinite;
 }
 
 @keyframes blinker {
