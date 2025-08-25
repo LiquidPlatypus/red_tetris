@@ -71,8 +71,10 @@ const losers = computed(() => rank.value.slice(0, -1));
 			<!-- Vainqueur en haut -->
 			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
-					<TetrisText :text="winner?.username"></TetrisText>
-					<TetrisText text="!! WINNER !!"></TetrisText>
+					<div class=winner-text>
+						<TetrisText :text="winner?.username"></TetrisText>
+						<TetrisText text="!! WINNER !!"></TetrisText>
+					</div>
 				</div>
 			</Window>
 
@@ -145,7 +147,16 @@ main {
 	border-left: 2px solid black;
 }
 
-@keyframes blinker {
+.winner-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
+	animation: blink 1s infinite;
+}
+
+@keyframes blink {
 	0%, 49% {
 		opacity: 1;
 	}
