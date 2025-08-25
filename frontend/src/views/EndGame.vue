@@ -72,7 +72,7 @@ const losers = computed(() => rank.value.slice(0, -1));
 			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
 					<TetrisText :text="winner?.username"></TetrisText>
-					<TetrisText text="WINNER !!!!"></TetrisText>
+					<TetrisText text="!! WINNER !!"></TetrisText>
 				</div>
 			</Window>
 
@@ -133,10 +133,11 @@ main {
 	position: absolute;
 	inset: 0.75rem;
 	box-sizing: border-box;
-	display: grid;
+	display: flex;
+	flex-direction: column;
 	gap: 2rem;
-	place-content: center;
-	text-align: center;
+	align-items: center;
+	justify-content: center;
 	font-size: 2.5rem;
 	color: #555555;
 	background-color: #88ac28;
