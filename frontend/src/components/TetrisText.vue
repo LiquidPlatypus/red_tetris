@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineComponent } from 'vue';
+import { computed } from 'vue';
 
 const font = {
 	'!': [
