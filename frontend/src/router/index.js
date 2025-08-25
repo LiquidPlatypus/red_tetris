@@ -33,7 +33,13 @@ const router = createRouter({
 			path: '/endgame',
 			name: 'EndGame',
 			component: EndGame,
-		}
+		},
+		{
+			path: '/:pathMatch(.*)*',
+			name: 'UrlNotFound',
+			component: () => import('@/views/404.vue'),
+			porps: true,
+		},
 	],
 })
 

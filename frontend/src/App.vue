@@ -27,6 +27,12 @@ socket.on('error', (message) => {
 	router.push('/');
 });
 
+socket.on('go-to', (router_dest, message) => {
+	if (message !== '')
+		window.alert(message);
+	router.push(router_dest);
+});
+
 function clickTitle() {
 	if (route.fullPath === '/')
 		return;
