@@ -79,17 +79,22 @@ const losers = computed(() => rank.value.slice(0, -1));
 			</Window>
 
 			<!-- Les autres joueurs en dessous -->
-			<div class="losers">
-				<Window
-					v-for="{ username } in losers"
-					:key="username"
-					:title="username"
-					variant="results"
-					customClass="fix-overflow-endgame"
-				>
-					<h2 class="losers-name">{{ username }}</h2>
-				</Window>
-			</div>
+			<Window title="Losers" class="losers">
+				<div class="losers-box">
+					<Window
+						v-for="(player, index) in losers"
+						:key="player.username"
+						:title="player.username"
+						variant="results"
+						:class="`loser loser-${index}`"
+						customClass="fix-overflow-endgame"
+					>
+						<h2 class="losers-name">{{ player.username }}</h2>
+					</Window>
+
+					<TetrisText class="loser-text" text="LOSERS"></TetrisText>
+				</div>
+			</Window>
 
 			<AppButton @click="retry">
 				RETURN TO LOBBY
@@ -120,7 +125,7 @@ main {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1rem;
+	gap: 5rem;
 	width: 100%;
 }
 
@@ -165,18 +170,33 @@ main {
 	}
 }
 
-.losers {
+.losers-box {
 	display: grid;
-	grid-template-columns: repeat(2, 8rem);
+	background-color: #88ac28;
+	grid-template-columns: repeat(3, auto);
 	grid-template-rows: repeat(3, 5rem);
-	column-gap: 25rem;
-	row-gap: 4rem;
+	column-gap: 2rem;
+	row-gap: 1rem;
+	position: relative;
+	justify-content: center;
+	align-items: center;
+	padding-left: 5px;
+	padding-right: 5px;
 }
+
+.loser-0 { grid-area: 1 / 1; } /* haut gauche */
+.loser-1 { grid-area: 1 / 3; } /* haut droit */
+.loser-2 { grid-area: 3 / 1; } /* bas gauche */
+.loser-3 { grid-area: 3 / 3; } /* bas droit */
 
 .losers-name {
 	font-size: 1rem;
 	text-align: center;
 	padding: 0.1rem;
+}
+
+.loser-text {
+	grid-area: 2 / 2;
 }
 
 .dot-typing {
