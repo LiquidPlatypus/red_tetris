@@ -1,6 +1,7 @@
 <script setup>
-import { RouterView, useRoute, useRouter } from "vue-router";
+import { RouterView, useRoute, useRouter, onBeforeRouteLeave  } from "vue-router";
 import socket from "./socket.js";
+import { onBeforeUnmount } from "vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -42,6 +43,15 @@ function clickTitle() {
 		router.push('/');
 	}
 }
+
+onBeforeUnmount(() => {
+	socket.off('go-to');
+	socket.off('error');
+	socket.off('server-log');
+	socket.off('refresh-player');
+	socket.off('disconnect');
+	socket.off('connect');
+});
 
 </script>
 

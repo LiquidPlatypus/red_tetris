@@ -18,10 +18,10 @@ const positions = [
 
 function retry() {
 	socket.emit('return-lobby');
-	socket.once('get-value', (seed, username) => {
-		router.push(`/${seed}/${username}`);
-	});
 }
+socket.on('get-value', (seed, username) => {
+	router.push(`/${seed}/${username}`);
+});
 
 onBeforeRouteLeave(async (to, from, next) => {
 	const allowedPaths = ['/'];
@@ -50,6 +50,8 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => {
 	window.removeEventListener("beforeunload", handleBeforeUnload);
+	socket.off('get-value');
+	socket.off('rank');
 });
 
 const rank = ref([]);

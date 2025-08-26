@@ -8,8 +8,15 @@ const router = useRouter()
 const route = useRoute()
 const seed = route.params.seed;
 const username = route.params.username;
-console.log('Lobby join !');
+if (username.length > 12) {
+	// const confirmPseudo = window.confirm("Your username is too long (max 12 characters)\nIt will be trunced\nContinue ?");
+	const confirmPseudo = window.prompt("Entre ton pseudo :", "Joueur1");
+	if (confirmPseudo !== '') {
+		username = confirmPseudo;
+	}
+}
 
+console.log('Lobby join !');
 socket.emit('join-user', { seed, username });
 
 socket.on('launch-game', () => {
@@ -49,6 +56,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
 	window.removeEventListener("beforeunload", handleBeforeUnload);
+	socket.off('launch-game');
 });
 
 </script>
