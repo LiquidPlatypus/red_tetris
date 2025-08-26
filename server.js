@@ -99,7 +99,7 @@ io.on('connection', (socket) => {
             socket.emit('error', 'Lobby full');
         else if (instance_game.getCurrent() === false) {
             for (const playerId of instance_game.getPlayerList().keys()) {
-                if (instance_game.getPlayer(playerId).getUsername() === username)  {
+                if (instance_game.getPlayer(playerId).getUsername() === username && playerId !== socket.id)  {
                     socket.emit('go-to', `/${instance_game.getSeed()}`, 'This username already taked');
                     return;
                 }
