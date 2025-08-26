@@ -10,13 +10,6 @@ import { askServer } from "@/utils";
 const username = ref('');
 const router = useRouter();
 
-const positions = [
-	{class: "top-left"},
-	{class: "top-right"},
-	{class: "bottom-left"},
-	{class: "bottom-right"},
-]
-
 function retry() {
 	socket.emit('return-lobby');
 	socket.once('get-value', (seed, username) => {
@@ -68,7 +61,6 @@ const losers = computed(() => rank.value.slice(0, -1));
 <template>
 	<main class="endgame">
 		<div v-if="allPlayersFinished" class="end-screen">
-			<!-- Vainqueur en haut -->
 			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
 					<div class=winner-text>
@@ -78,23 +70,20 @@ const losers = computed(() => rank.value.slice(0, -1));
 				</div>
 			</Window>
 
-			<!-- Les autres joueurs en dessous -->
-			<Window title="Losers" class="losers">
-				<div class="losers-box">
-					<Window
-						v-for="(player, index) in losers"
-						:key="player.username"
-						:title="player.username"
-						variant="results"
-						:class="`loser loser-${index}`"
-						customClass="fix-overflow-endgame"
-					>
-						<h2 class="losers-name">{{ player.username }}</h2>
-					</Window>
-
-					<TetrisText class="loser-text" text="LOSERS"></TetrisText>
-				</div>
-			</Window>
+			<div class="loser-div">
+				<TetrisText class="loser-text" text="LOSERS"></TetrisText>
+				<Window title="Losers" class="losers">
+					<div class="losers-box">
+						<table id="losers-tab">
+							<tbody>
+								<tr v-for="(player) in losers" :key="username" class="losers-cell">
+									<td :title="username" class="losers-name">{{ player.username }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</Window>
+			</div>
 
 			<AppButton @click="retry">
 				RETURN TO LOBBY
@@ -170,38 +159,46 @@ main {
 	}
 }
 
-.losers-box {
+.loser-div {
 	display: grid;
+	grid-template-columns: 200px;
+	grid-template-rows: repeat(2, auto);
+	justify-items: center;
+}
+
+.loser-text {
+	grid-area: 1 / 1;
+	margin-bottom: 10px;
+}
+
+.losers {
+	width: 75%;
+	grid-area: 2 / 1;
+}
+
+.losers-box {
 	background-color: #88ac28;
-	grid-template-columns: repeat(3, auto);
-	grid-template-rows: repeat(3, 5rem);
-	column-gap: 2rem;
-	row-gap: 1rem;
 	position: relative;
-	justify-content: center;
-	align-items: center;
 	padding-left: 5px;
 	padding-right: 5px;
+	display: flex;
+	justify-content: center;
+	border-top: 2px solid black;
+	border-left: 2px solid black;
 }
 
-.loser {
-	width: 6rem;
-	height: 4rem;
+#losers-tab {
+	border-collapse: collapse;
 }
 
-.loser-0 { grid-area: 1 / 1; } /* haut gauche */
-.loser-1 { grid-area: 1 / 3; } /* haut droit */
-.loser-2 { grid-area: 3 / 1; } /* bas gauche */
-.loser-3 { grid-area: 3 / 3; } /* bas droit */
+.losers-cell {
+	border: 2px solid #2c3e50;
+}
 
 .losers-name {
 	font-size: 1rem;
 	text-align: center;
 	padding: 0.1rem;
-}
-
-.loser-text {
-	grid-area: 2 / 2;
 }
 
 .dot-typing {
