@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted } from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
+import { askServer } from "@/utils";
 
 const router = useRouter()
 const route = useRoute()
@@ -25,6 +26,16 @@ socket.on('launch-game', () => {
 
 function createGame() {
 	socket.emit('launch-game', seed);
+}
+async function copyLink() {
+	const link = `${window.location.origin}/${seed}`;
+	console.log(`Link copied : ${window.location.origin}/${seed}`);
+	if (navigator.clipboard && navigator.clipboard.writeText)
+		navigator.clipboard.writeText(link);
+	else {
+		const element = document.getElementById('url');
+		element.innerHTML = link;
+	}
 }
 
 onBeforeRouteLeave((to, from, next) => {
@@ -65,8 +76,9 @@ onBeforeUnmount(() => {
 	<main class="lobby">
 		<div class="gameChoice">
 			<AppButton @click="createGame">LAUNCH GAME</AppButton>
-			<AppButton>COPY LINK</AppButton>
+			<AppButton @click="copyLink">COPY LINK</AppButton>
 		</div>
+		<div id="url"></div>
 	</main>
 </template>
 

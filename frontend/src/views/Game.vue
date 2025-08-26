@@ -132,9 +132,8 @@ async function counter(nbr) {
 	counter.textContent = "Game :";
 }
 
-askServer('start-game', socket).then((res) => {
-	console.log(`Game status: ${res}`);
-});
+socket.emit('ask-server', 'start-game');
+
 socket.on('launch', (startAt) => {
 	const delay = startAt - Date.now()
 	counter(parseInt(delay / 1000));
