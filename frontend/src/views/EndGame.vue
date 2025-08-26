@@ -4,17 +4,11 @@ import {useRouter, onBeforeRouteLeave} from "vue-router";
 import socket from '@/socket';
 import AppButton from "@/components/AppButton.vue";
 import Window from "@/components/Window.vue";
+import TetrisText from "@/components/TetrisText.vue";
 import { askServer } from "@/utils";
 
 const username = ref('');
 const router = useRouter();
-
-const positions = [
-	{class: "top-left"},
-	{class: "top-right"},
-	{class: "bottom-left"},
-	{class: "bottom-right"},
-]
 
 function retry() {
 	socket.emit('return-lobby');
@@ -69,26 +63,31 @@ const losers = computed(() => rank.value.slice(0, -1));
 <template>
 	<main class="endgame">
 		<div v-if="allPlayersFinished" class="end-screen">
-			<!-- Vainqueur en haut -->
-			<Window title="Winner" variant="results" class="winner">
+			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
 				<div class="winner-box">
-					<span class="winner-name">{{ winner?.username }}</span>
+					<div class=winner-text>
+						<TetrisText :text="winner?.username"></TetrisText>
+						<TetrisText text="!! WINNER !!"></TetrisText>
+					</div>
 				</div>
 			</Window>
 
-			<!-- Les autres joueurs en dessous -->
-			<div class="losers">
-				<Window
-					v-for="{ username } in losers"
-					:key="username"
-					:title="username"
-					variant="results"
-				>
-					<h2>{{ username }}</h2>
+			<div class="loser-div">
+				<TetrisText class="loser-text" text="LOSERS"></TetrisText>
+				<Window title="Losers" class="losers">
+					<div class="losers-box">
+						<table id="losers-tab">
+							<tbody>
+								<tr v-for="(player) in losers" :key="username" class="losers-cell">
+									<td :title="username" class="losers-name">{{ player.username }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</Window>
 			</div>
 
-			<AppButton>
+			<AppButton @click="retry">
 				RETURN TO LOBBY
 			</AppButton>
 		</div>
@@ -117,28 +116,91 @@ main {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1rem;
+	gap: 5rem;
 	width: 100%;
 }
 
 .winner {
-	width: 100%;
-	text-align: center;
+	position: relative;
+	padding: 0;
+	width: 50rem;
+	height: 17rem;
 }
 
 .winner-box {
-	font-size: 1.8rem;
-	font-weight: bold;
-	text-align: center;
-	color: gold;
+	position: absolute;
+	inset: 0.75rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	align-items: center;
+	justify-content: center;
+	font-size: 2.5rem;
+	color: #555555;
+	background-color: #88ac28;
+	border-top: 2px solid black;
+	border-left: 2px solid black;
+}
+
+.winner-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
+	animation: blink 1s infinite;
+}
+
+@keyframes blink {
+	0%, 49% {
+		opacity: 1;
+	}
+	50%, 100% {
+		opacity: 0;
+	}
+}
+
+.loser-div {
+	display: grid;
+	grid-template-columns: 200px;
+	grid-template-rows: repeat(2, auto);
+	justify-items: center;
+}
+
+.loser-text {
+	grid-area: 1 / 1;
+	margin-bottom: 10px;
 }
 
 .losers {
-	display: grid;
-	grid-template-columns: repeat(2, 10rem);
-	gap: 1rem;
-	width: 100%;
-	max-width: 900px;
+	width: 75%;
+	grid-area: 2 / 1;
+}
+
+.losers-box {
+	background-color: #88ac28;
+	position: relative;
+	padding-left: 5px;
+	padding-right: 5px;
+	display: flex;
+	justify-content: center;
+	border-top: 2px solid black;
+	border-left: 2px solid black;
+}
+
+#losers-tab {
+	border-collapse: collapse;
+}
+
+.losers-cell {
+	border: 2px solid #2c3e50;
+}
+
+.losers-name {
+	font-size: 1rem;
+	text-align: center;
+	padding: 0.1rem;
 }
 
 .dot-typing {

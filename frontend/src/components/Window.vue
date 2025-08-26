@@ -55,12 +55,17 @@ defineProps({
 }
 
 .win95-content {
-	padding: 0.5rem;
+	padding: 0.3rem;
 }
 
 
 .fix-overflow .win95-title-bar {
 	left: -4.5px;
 }
+.fix-overflow-endgame .win95-title-bar {
+	left: -4.5px;
+	right: -4.5px;
+}
+
 
 </style>

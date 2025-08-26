@@ -369,18 +369,6 @@ main {
 	text-align: center;
 }
 
-.pause-overlay {
-	position: absolute;
-	top: 48%;
-	left: 31.5%;
-	transform: translate(-50%, -50%);
-	font-size: 2rem;
-	font-weight: bold;
-	color: RED;
-	z-index: 10;
-	animation: blinker 1s linear infinite;
-}
-
 @keyframes blinker {
 	0%, 49% {
 		opacity: 1;
