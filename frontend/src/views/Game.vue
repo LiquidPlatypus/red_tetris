@@ -3,7 +3,6 @@ import {onBeforeUnmount, ref, computed, onMounted, onUnmounted} from "vue";
 import socket from '@/socket';
 import {useRouter, onBeforeRouteLeave} from "vue-router";
 
-import AppButton from "@/components/AppButton.vue";
 import Window from "@/components/Window.vue";
 
 import { askServer } from "../utils.js";
