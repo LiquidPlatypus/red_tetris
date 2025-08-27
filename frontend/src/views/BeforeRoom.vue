@@ -11,7 +11,6 @@ const seed = route.params.seed;
 function joinLobby() {
 	if (pseudo.value.trim() === '')
 		return;
-	console.log(`/${seed}/${pseudo.value}`);
 	router.push(`/${seed}/${pseudo.value}`);
 }
 

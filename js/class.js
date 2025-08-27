@@ -130,8 +130,9 @@ export class Game {
 		const players = new Map();
 		const ranking = new Map();
 		const grids = new Map();
-		const integer = getRandomInt();
+		let integer = getRandomInt();
 		let current = false;
+		let ready = 0;
 
 		const instance = {
 			getSeed: () => seed,
@@ -150,6 +151,13 @@ export class Game {
 			},
 			getPlayerList: () => players,
 			getPlayerCount: () => players.size,
+			setReady: (nbr = ready + 1) => {
+				ready = nbr;
+			},
+			getReady: () => ready,
+			changeInteger: () => {
+				integer = getRandomInt();
+			},
 			getInteger: () => integer,
 			rankPlayer: (score, player) => {
 				players.delete(player.getId());

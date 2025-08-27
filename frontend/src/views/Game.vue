@@ -117,12 +117,26 @@ async function getUserGrid() {
 
 // ======== INITIALISATION ========
 
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-askServer('start-game', socket).then((res) => {
-	console.log(`Game status: ${res}`);
-});
+async function counter(nbr) {
+	const counter = document.getElementById("counter");
+
+	for (let i = nbr; i >= 0; i--) {
+		counter.textContent = i;
+		await sleep(1000);
+	}
+
+	counter.textContent = "Game :";
+}
+
+socket.emit('ask-server', 'start-game');
+
 socket.on('launch', (startAt) => {
 	const delay = startAt - Date.now()
+	counter(parseInt(delay / 1000));
 	setTimeout(() => {
 		socket.emit('launch');
 	}, delay);
@@ -170,6 +184,12 @@ onBeforeRouteLeave((to, from, next) => {
 onBeforeUnmount(() => {
 	window.removeEventListener("keydown", handleKeyPress);
 	window.removeEventListener("beforeunload", handleBeforeUnload);
+	socket.off('getGameRunning');
+	socket.off('getGameOver');
+	socket.off('getLines');
+	socket.off('flattenedGrid');
+	socket.off('flattenedNextPiece');
+	socket.off('launch');
 });
 
 </script>
@@ -196,6 +216,7 @@ onBeforeUnmount(() => {
 			</Window>
 
 			<!-- Terrain principal -->
+			<div id="counter"></div>
 			<Window
 				:title="username"
 				variant="username"
@@ -281,6 +302,13 @@ main {
 	gap: 1rem;
 	justify-content: center;
 	align-items: flex-start;
+}
+#counter {
+	font-size: 3rem;
+	color: green;
+	font-weight: bold;
+	text-align: center;
+	margin-top: 50px;
 }
 
 .other-players .username {

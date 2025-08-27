@@ -7,6 +7,9 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const HOSTURL = getLocalIP();
+const HOST = '0.0.0.0';
+const PORT = 3000;
 
 import { 
     Player,
@@ -95,11 +98,11 @@ io.on('connection', (socket) => {
         instance_game = getGame(seed);
         if (!instance_game)
             socket.emit('error', 'Game not exist');
-        else if (instance_game.getPlayerCount() === 5)
+        else if (!instance_game.getPlayer(instance_player.getId()) && instance_game.getPlayerCount() === 5)
             socket.emit('error', 'Lobby full');
         else if (instance_game.getCurrent() === false) {
             for (const playerId of instance_game.getPlayerList().keys()) {
-                if (instance_game.getPlayer(playerId).getUsername() === username)  {
+                if (instance_game.getPlayer(playerId).getUsername() === username && playerId !== socket.id)  {
                     socket.emit('go-to', `/${instance_game.getSeed()}`, 'This username already taked');
                     return;
                 }
@@ -162,7 +165,8 @@ io.on('connection', (socket) => {
             return;
         }
         if (signal === 'start-game') {
-            if (instance_player.getHost() && instance_game.getSeed() !== '') {
+            instance_game.setReady();
+            if (instance_game.getReady() === instance_game.getPlayerCount() && instance_game.getSeed() !== '') {
                 const delay = Date.now() + 3000;
                 io.to(`${instance_game.getSeed()}`).emit('launch', delay);
                 socket.emit('response', true);
@@ -218,6 +222,8 @@ io.on('connection', (socket) => {
     socket.on('return-lobby', () => {
         if (instance_game.getCurrent() === true)
             instance_game.setCurrent(false);
+        instance_game.setReady(0);
+        instance_game.changeInteger();
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
         instance_game.removeRank(instance_player);
         instance_game.removeGrid(instance_player);
@@ -252,9 +258,6 @@ io.on('connection', (socket) => {
     });
 });
 
-const HOSTURL = getLocalIP();
-const HOST = '0.0.0.0';
-const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`LOG : Listening on ${PORT}`);
     console.log(`URL : http://${HOSTURL}:${PORT}`);
