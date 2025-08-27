@@ -302,10 +302,11 @@ main {
 .game-layout {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	grid-template-rows: repeat(3, auto);
+	grid-template-rows: repeat(3, 1fr);
 	row-gap: 25px;
 	align-items: center;
 	justify-items: center;
+	margin-top: 12rem;
 }
 
 .other-player-grid {
