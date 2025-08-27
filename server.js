@@ -226,7 +226,6 @@ io.on('connection', (socket) => {
         instance_game.changeInteger();
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
         instance_game.removeRank(instance_player);
-        instance_game.removeGrid(instance_player);
         socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
     });
 

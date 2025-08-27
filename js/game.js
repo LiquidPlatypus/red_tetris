@@ -13,11 +13,20 @@ import {
 	refillBag
 } from './class.js';
 
+const ROWS = 20;
+const COLS = 10;
+
+function addLines(instance_game, instance_player) {
+	const grid_list = instance_game.getGridList(instance_player);
+	for (const grid of grid_list.values()) {
+		grid.shift();
+		grid.push(Array(COLS).fill("stone"));
+	}
+}
+
 export function gameLogic(socket, instance_player, instance_game, random) {
 	
 	// INIT PART
-	const ROWS = 20;
-	const COLS = 10;
 
 	let isGameRunning = false;
 	let gameOver = false;
@@ -140,6 +149,8 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 		permanentGrid = newGrid;
 		instance_game.addGrid(instance_player, permanentGrid);
 
+		if (linesCleared > lines)
+			addLines(instance_game, instance_player);
 		lines = linesCleared;
 		socket.emit('getLines', lines);
 
@@ -190,6 +201,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 			lines = 0;
 			gameOver = false;
 			permanentGrid = Array(COLS).fill("empty");
+			instance_game.removeGrid(instance_player);
 			socket.emit('getGameOver', gameOver);
 		}
 	}
