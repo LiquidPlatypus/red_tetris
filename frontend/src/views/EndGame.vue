@@ -55,7 +55,7 @@ socket.on('rank', (data) => {
 });
 
 const winner = computed(() => rank.value.at(-1))
-const losers = computed(() => rank.value.slice(0, -1));
+const losers = computed(() => rank.value.slice(0, -1).reverse());
 </script>
 
 <template>
