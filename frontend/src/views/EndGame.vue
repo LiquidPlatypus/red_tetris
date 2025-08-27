@@ -199,11 +199,11 @@ main {
 
 #losers-tab {
 	margin: 4px;
-	border-collapse: separate;
+	border-collapse: collapse;
 }
 
 .losers-cell {
-	border-top: 2px solid black;
+	border: 2px solid #627A20;
 }
 
 .losers-name {
