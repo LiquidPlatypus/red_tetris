@@ -58,11 +58,46 @@ const flattenedOtherPlayers = computed(() => {
 		.filter(playerData => playerData && playerData.username)
 		.map(playerData => ({
 			username: playerData.username,
-			flattened: playerData.grid
-				? playerData.grid.flat()
-				: Array(ROWS * COLS).fill("empty")
+			flattened: buildHeightGrid(playerData.grid)
 		}));
 });
+
+function computeHeights(grid) {
+	if (!grid)
+		return Array(COLS).fill(0);
+
+	const heights = Array(COLS).fill(0);
+
+	for (let col = 0; col < COLS; col++) {
+		for (let row = 0; row < ROWS; row++) {
+			if (grid[row][col] !== "empty") {
+				heights[col] = ROWS - row;
+				break;
+			}
+		}
+	}
+
+	return heights;
+}
+
+function buildHeightGrid(grid) {
+	if (!grid)
+		return Array(ROWS * COLS).fill("empty");
+
+	const height = computeHeights(grid);
+	const heightGrid = [];
+
+	for (let row = 0; row < ROWS; row++) {
+		for (let col = 0; col < COLS; col++) {
+			if (ROWS - row <= height[col])
+				heightGrid.push("block-height");
+			else
+				heightGrid.push("empty-height");
+		}
+	}
+
+	return heightGrid;
+}
 
 // Grille pour la prochaine pièce.
 const flattenedNextPiece = ref([]);
@@ -70,12 +105,6 @@ socket.emit('ask-server', 'init-piece');
 socket.on('flattenedNextPiece', (flatNextPiece) => {
 	flattenedNextPiece.value = flatNextPiece;
 });
-
-function getIntervalDelay() {
-	const baseSpeed = 500;
-	const speedUp = Math.floor(lines / 10) * 50;
-	return Math.max(baseSpeed - speedUp, 100);
-}
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
@@ -158,7 +187,7 @@ onMounted(async () => {
 	gridUpdateInterval.value = setInterval(() => {
 		if (!gameOver.value)
 			fetchOtherPlayerGrids();
-	}, getIntervalDelay());
+	}, 100);
 });
 onUnmounted(() => {
 	socket.emit('ask-server', 'stop-game');
@@ -383,6 +412,11 @@ h3 {
 	font-size: 150%;
 	margin: 5px;
 	text-align: center;
+}
+
+.block-height {
+	background-color: darkgreen;
+	border: 1px solid #214132;
 }
 
 .block-I {
