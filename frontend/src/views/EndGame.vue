@@ -205,7 +205,7 @@ main {
 }
 
 .losers-cell {
-	border: 2px solid #627A20;
+	border: 2px dotted #627A20;
 }
 
 .losers-name {
