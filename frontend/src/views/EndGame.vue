@@ -72,7 +72,7 @@ const losers = computed(() => rank.value.slice(0, -1).reverse());
 				</div>
 			</Window>
 
-			<div class="loser-div">
+			<div v-if="losers[0]" class="loser-div">
 				<TetrisText class="loser-text" text="LOSERS"></TetrisText>
 				<Window title="Losers" class="losers">
 					<div class="losers-box">
