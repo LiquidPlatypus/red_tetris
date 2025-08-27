@@ -243,7 +243,6 @@ onBeforeUnmount(() => {
 			</Window>
 
 			<!-- Terrain principal -->
-			<div id="counter">{{ counter }}</div>
 			<Window
 				:title="username"
 				variant="username"
@@ -273,6 +272,7 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 			</Window>
+			<div id="counter">{{ counter }}</div>
 		</div>
 
 		<div class="controls">
@@ -295,7 +295,7 @@ main {
 .game-layout {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	grid-template-rows: repeat(2, 1fr);
+	grid-template-rows: repeat(3, auto);
 	row-gap: 25px;
 	align-items: center;
 	justify-items: center;
@@ -330,12 +330,14 @@ main {
 	justify-content: center;
 	align-items: flex-start;
 }
+
 #counter {
+	grid-area: 3 / 2;
 	font-size: 3rem;
-	color: green;
+	color: aliceblue;
 	font-weight: bold;
 	text-align: center;
-	margin-top: 50px;
+	font-family: "ModernTetris", sans-serif;
 }
 
 .other-players .username {
