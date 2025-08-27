@@ -11,6 +11,7 @@ const router = useRouter();
 
 const ROWS = 20;
 const COLS = 10;
+const counter = ref(null);
 
 const positions = [
 	{class: "top-left"},
@@ -149,22 +150,20 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function counter(nbr) {
-	const counter = document.getElementById("counter");
-
-	for (let i = nbr; i >= 0; i--) {
-		counter.textContent = i;
+async function startCounter(nbr) {
+	for (let i = nbr; i >= 1; i--) {
+		counter.value = i;
 		await sleep(1000);
 	}
 
-	counter.textContent = "Game :";
+	counter.value = "Game !";
 }
 
 socket.emit('ask-server', 'start-game');
 
 socket.on('launch', (startAt) => {
 	const delay = startAt - Date.now()
-	counter(parseInt(delay / 1000));
+	startCounter(parseInt(delay / 1000) + 1);
 	setTimeout(() => {
 		socket.emit('launch');
 	}, delay);
@@ -244,7 +243,7 @@ onBeforeUnmount(() => {
 			</Window>
 
 			<!-- Terrain principal -->
-			<div id="counter"></div>
+			<div id="counter">{{ counter }}</div>
 			<Window
 				:title="username"
 				variant="username"
