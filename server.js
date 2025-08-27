@@ -98,7 +98,7 @@ io.on('connection', (socket) => {
         instance_game = getGame(seed);
         if (!instance_game)
             socket.emit('error', 'Game not exist');
-        else if (instance_game.getPlayerCount() === 5)
+        else if (!instance_game.getPlayer(instance_player.getId()) && instance_game.getPlayerCount() === 5)
             socket.emit('error', 'Lobby full');
         else if (instance_game.getCurrent() === false) {
             for (const playerId of instance_game.getPlayerList().keys()) {
