@@ -12,6 +12,7 @@ const router = useRouter();
 const ROWS = 20;
 const COLS = 10;
 const counter = ref(null);
+const showCounter = ref(false);
 
 const positions = [
 	{class: "top-left"},
@@ -151,12 +152,18 @@ function sleep(ms) {
 }
 
 async function startCounter(nbr) {
+	showCounter.value = true;
+
 	for (let i = nbr; i >= 1; i--) {
 		counter.value = i;
 		await sleep(1000);
 	}
 
 	counter.value = "Game !";
+
+	setTimeout(() => {
+		showCounter.value = false;
+	}, 2000);
 }
 
 socket.emit('ask-server', 'start-game');
@@ -272,7 +279,7 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 			</Window>
-			<div id="counter">{{ counter }}</div>
+			<div v-if="showCounter" id="counter">{{ counter }}</div>
 		</div>
 
 		<div class="controls">
