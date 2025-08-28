@@ -1,7 +1,7 @@
 <script setup>
-import {onBeforeUnmount, ref, computed, onMounted, onUnmounted} from "vue";
-import socket from '@/socket';
-import {useRouter, onBeforeRouteLeave} from "vue-router";
+import { onBeforeUnmount, ref, computed, onMounted, onUnmounted } from "vue";
+import socket from "@/socket";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 
 import Window from "@/components/Window.vue";
 
@@ -15,40 +15,39 @@ const counter = ref(null);
 const showCounter = ref(false);
 
 const positions = [
-	{class: "top-left"},
-	{class: "top-right"},
-	{class: "bottom-left"},
-	{class: "bottom-right"},
-]
+	{ class: "top-left" },
+	{ class: "top-right" },
+	{ class: "bottom-left" },
+	{ class: "bottom-right" },
+];
 
-const username = ref('');
+const username = ref("");
 
-askServer('get-username', socket).then((res) => {
+askServer("get-username", socket).then((res) => {
 	username.value = res;
 });
 
 const isGameRunning = ref(false);
-socket.on('getGameRunning', (info) => {
+socket.on("getGameRunning", (info) => {
 	isGameRunning.value = info;
 });
 const gameOver = ref(false);
-socket.on('getGameOver', (info) => {
+socket.on("getGameOver", (info) => {
 	gameOver.value = info;
 	if (gameOver.value) {
-		socket.emit('finish', lines.value);
-		router.push('endgame');
+		socket.emit("finish", lines.value);
+		router.push("endgame");
 	}
-
 });
 const lines = ref(0);
-socket.on('getLines', (info) => {
+socket.on("getLines", (info) => {
 	lines.value = info;
 });
 
 // Utilisation des fonctions dans 'logic.js' pour calculer l'affichage.
 const flattenedGrid = ref([]);
-socket.emit('ask-server', 'init-grid');
-socket.on('flattenedGrid', (flatGrid) => {
+socket.emit("ask-server", "init-grid");
+socket.on("flattenedGrid", (flatGrid) => {
 	flattenedGrid.value = flatGrid;
 });
 
@@ -56,16 +55,15 @@ socket.on('flattenedGrid', (flatGrid) => {
 const otherPlayersGrids = ref({});
 const flattenedOtherPlayers = computed(() => {
 	return Object.values(otherPlayersGrids.value)
-		.filter(playerData => playerData && playerData.username)
-		.map(playerData => ({
+		.filter((playerData) => playerData && playerData.username)
+		.map((playerData) => ({
 			username: playerData.username,
-			flattened: buildHeightGrid(playerData.grid)
+			flattened: buildHeightGrid(playerData.grid),
 		}));
 });
 
 function computeHeights(grid) {
-	if (!grid)
-		return Array(COLS).fill(0);
+	if (!grid) return Array(COLS).fill(0);
 
 	const heights = Array(COLS).fill(0);
 
@@ -82,18 +80,15 @@ function computeHeights(grid) {
 }
 
 function buildHeightGrid(grid) {
-	if (!grid)
-		return Array(ROWS * COLS).fill("empty");
+	if (!grid) return Array(ROWS * COLS).fill("empty");
 
 	const height = computeHeights(grid);
 	const heightGrid = [];
 
 	for (let row = 0; row < ROWS; row++) {
 		for (let col = 0; col < COLS; col++) {
-			if (ROWS - row <= height[col])
-				heightGrid.push("block-height");
-			else
-				heightGrid.push("empty-height");
+			if (ROWS - row <= height[col]) heightGrid.push("block-height");
+			else heightGrid.push("empty-height");
 		}
 	}
 
@@ -102,15 +97,15 @@ function buildHeightGrid(grid) {
 
 // Grille pour la prochaine pièce.
 const flattenedNextPiece = ref([]);
-socket.emit('ask-server', 'init-piece');
-socket.on('flattenedNextPiece', (flatNextPiece) => {
+socket.emit("ask-server", "init-piece");
+socket.on("flattenedNextPiece", (flatNextPiece) => {
 	flattenedNextPiece.value = flatNextPiece;
 });
 
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
 function handleKeyPress(e) {
-	socket.emit('input', e.code);
+	socket.emit("input", e.code);
 }
 
 async function fetchOtherPlayerGrids() {
@@ -133,11 +128,10 @@ async function fetchOtherPlayerGrids() {
  */
 async function getUserGrid() {
 	return new Promise((resolve, reject) => {
-		socket.emit('get-grids');
+		socket.emit("get-grids");
 
-		socket.once('grids', (grids) => {
-			if (!grids || Object.keys(grids).length === 0)
-				resolve(undefined);
+		socket.once("grids", (grids) => {
+			if (!grids || Object.keys(grids).length === 0) resolve(undefined);
 			resolve(grids);
 		});
 
@@ -148,7 +142,7 @@ async function getUserGrid() {
 // ======== INITIALISATION ========
 
 function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function startCounter(nbr) {
@@ -166,13 +160,13 @@ async function startCounter(nbr) {
 	}, 2000);
 }
 
-socket.emit('ask-server', 'start-game');
+socket.emit("ask-server", "start-game");
 
-socket.on('launch', (startAt) => {
-	const delay = startAt - Date.now()
+socket.on("launch", (startAt) => {
+	const delay = startAt - Date.now();
 	startCounter(parseInt(delay / 1000) + 1);
 	setTimeout(() => {
-		socket.emit('launch');
+		socket.emit("launch");
 	}, delay);
 });
 
@@ -182,25 +176,23 @@ function handleBeforeUnload(event) {
 
 const gridUpdateInterval = ref([]);
 onMounted(async () => {
-	if (await askServer('game-exist', socket) === false)
-		await router.push('/');
+	if ((await askServer("game-exist", socket)) === false) await router.push("/");
 	window.addEventListener("keydown", handleKeyPress);
 	window.addEventListener("beforeunload", handleBeforeUnload);
-	socket.emit('ask-server', 'init-piece');
+	socket.emit("ask-server", "init-piece");
 	await fetchOtherPlayerGrids();
 
 	gridUpdateInterval.value = setInterval(() => {
-		if (!gameOver.value)
-			fetchOtherPlayerGrids();
+		if (!gameOver.value) fetchOtherPlayerGrids();
 	}, 100);
 });
 onUnmounted(() => {
-	socket.emit('ask-server', 'stop-game');
+	socket.emit("ask-server", "stop-game");
 	clearInterval(gridUpdateInterval.value);
 });
 
 onBeforeRouteLeave((to, from, next) => {
-	const allowedPaths = ['/endgame', '/'];
+	const allowedPaths = ["/endgame", "/"];
 	if (allowedPaths.includes(to.path)) {
 		next();
 		return;
@@ -208,8 +200,8 @@ onBeforeRouteLeave((to, from, next) => {
 	const confirmLeave = window.confirm("Rage quit ?");
 	if (confirmLeave) {
 		next();
-		socket.emit('return');
-		router.push('/');
+		socket.emit("return");
+		router.push("/");
 	} else {
 		next(false);
 	}
@@ -218,14 +210,13 @@ onBeforeRouteLeave((to, from, next) => {
 onBeforeUnmount(() => {
 	window.removeEventListener("keydown", handleKeyPress);
 	window.removeEventListener("beforeunload", handleBeforeUnload);
-	socket.off('getGameRunning');
-	socket.off('getGameOver');
-	socket.off('getLines');
-	socket.off('flattenedGrid');
-	socket.off('flattenedNextPiece');
-	socket.off('launch');
+	socket.off("getGameRunning");
+	socket.off("getGameOver");
+	socket.off("getLines");
+	socket.off("flattenedGrid");
+	socket.off("flattenedNextPiece");
+	socket.off("launch");
 });
-
 </script>
 
 <template>
@@ -279,12 +270,37 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 			</Window>
-			<div v-if="showCounter" id="counter">{{ counter }}</div>
+			<div v-show="showCounter" id="counter">{{ counter }}</div>
 		</div>
 
 		<div class="controls">
-			<!-- AJOUTER CONTROLES -->
+			<div class="control">
+				<div class="keys">
+					<span class="key">←</span>
+					<span class="key">→</span>
+				</div>
+				<div class="desc">: Move piece</div>
+			</div>
+			<div class="control">
+				<div class="keys">
+					<span class="key">↑</span>
+				</div>
+				<div class="desc">: Rotate piece</div>
+			</div>
+			<div class="control">
+				<div class="keys">
+					<span class="key">↓</span>
+				</div>
+				<div class="desc">: Fast fall</div>
+			</div>
+			<div class="control">
+				<div class="keys">
+					<span class="key">Space</span>
+				</div>
+				<div class="desc">: Direct drop</div>
+			</div>
 		</div>
+
 
 		<RouterView />
 	</main>
@@ -399,21 +415,53 @@ main {
 }
 
 .controls {
-	margin-top: 0.5rem;
-	grid-column: 1 / 4;
-	grid-row: 4;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.3rem;
+	left: -4rem;
+}
+
+.control {
+	display: grid;
+	grid-template-columns: 150px auto;
+	align-items: center;
+}
+
+.keys {
+	display: flex;
+	gap: 4px;
+	justify-content: flex-end;
+}
+
+.key {
+	display: inline-block;
+	min-width: 30px;
 	text-align: center;
+	padding: 2px 6px;
+	font-family: "MS Sans Serif", "Tahoma", sans-serif;
+	font-size: 14px;
+	background: #777482;
+	border: 2px solid #C5C5C5;
+	border-right-color: #656565;
+	border-bottom-color: #656565;
+}
+
+.desc {
+	padding-left: 10px;
 }
 
 @keyframes blinker {
-	0%, 49% {
+	0%,
+	49% {
 		opacity: 1;
 	}
-	50%, 100% {
+	50%,
+	100% {
 		opacity: 0;
 	}
 }
-
 
 h3 {
 	color: #214132;
@@ -552,5 +600,4 @@ h3 {
 	height: 50%;
 	background-color: black;
 }
-
 </style>
