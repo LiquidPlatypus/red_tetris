@@ -46,8 +46,6 @@ describe ("Window", () => {
 	});
 
 	it("should not have inline background color when titleBgColor is not provided", () => {
-		const wrapper = mount(Window);
-
 		const titleBar = wrapper.find(".win95-title-bar");
 		expect(titleBar.element.style.backgroundColor).toBe("");
 	});
@@ -58,5 +56,40 @@ describe ("Window", () => {
 		});
 
 		expect(wrapper.find(".win95-window").classes()).toContain("customClass");
+	});
+
+	it("should have custom style if provided", () => {
+		const wrapper = mount(Window, {
+			props: { customStyle: { border: "1px solid red" } },
+		});
+
+		const window = wrapper.find(".win95-window");
+		expect(window.element.style.border).toBe("1px solid red");
+	});
+
+	it("should not have custom style if not provided", () => {
+		const window = wrapper.find(".win95-window");
+		expect(window.element.style.border).toBe("");
+	});
+
+	it("should render empty when no slot provided", () => {
+		const wrapper = mount(Window, {
+			props: { title: "Test Window" }
+		});
+
+		expect(wrapper.find(".win95-content").text()).toBe("");
+		expect(wrapper.find(".win95-content").element.children.length).toBe(0);
+	});
+
+	it("should render slot content when provided", () => {
+		const wrapper = mount(Window, {
+			props: { title: "Test Window" },
+			slots: {
+				default: "<p>test slot</p>"
+			}
+		});
+
+		expect(wrapper.find(".win95-content").html()).toContain("<p>test slot</p>");
+		expect(wrapper.find(".win95-content").text()).toBe("test slot");
 	});
 });
