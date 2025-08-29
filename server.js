@@ -208,8 +208,8 @@ io.on('connection', (socket) => {
     socket.on('finish', (score) => {
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), false, instance_player.getId());
         instance_game.rankPlayer(score, instance_player);
-        // if not the last to finish: don't send ending signal
-        if (instance_game.gameStatus() === false) {
+		let res = instance_game.gameStatus();
+		if (res === true) {
             const rank = instance_game.getRank();
             const rank_list = Array.from(rank.entries()).map(([pID, pScore]) => ({
                 score: pScore,
@@ -217,6 +217,10 @@ io.on('connection', (socket) => {
             }));
             io.to(`${instance_game.getSeed()}`).emit('rank', rank_list);
         }
+		else if (res) {
+			io.to(res).emit('getGameOver', true);
+			game.stopGame();
+		}
     });
 
     socket.on('return-lobby', () => {
@@ -226,7 +230,6 @@ io.on('connection', (socket) => {
         instance_game.changeInteger();
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
         instance_game.removeRank(instance_player);
-        instance_game.removeGrid(instance_player);
         socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
     });
 

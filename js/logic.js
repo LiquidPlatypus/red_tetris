@@ -117,7 +117,7 @@ export function calculateGridAfterLocking(permanentGrid, piece, ROWS, COLS, line
 	// Calculer les lignes Complètes.
 	let linesCleared = lines;
 	for (let i = ROWS - 1; i >= 0; i--) {
-		if (newGrid[i].every(cell => cell !== "empty")) {
+		if (newGrid[i].every(cell => cell !== "empty") && newGrid[i].every(cell => cell !== "stone")) {
 			newGrid.splice(i, 1);
 			newGrid.unshift(Array(COLS).fill("empty"));
 			linesCleared++;

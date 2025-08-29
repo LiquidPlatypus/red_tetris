@@ -169,11 +169,19 @@ export class Game {
 			},
 			getRank: () => ranking,
 			gameStatus: () => {
+				let it = 0;
+				let p_id;
 				for (const value of players.values()) {
-					if (value.getStatus() == true)
-						return true;
+					if (value.getStatus() == true) {
+						it++;
+						p_id = value.getId();
+					}
+					if (it > 1)
+						return undefined;
 				}
-				return false;
+				if (it === 0)
+					return true;
+				return p_id;
 			},
 			getGridList: (except_player = undefined) => {
 				if (except_player !== undefined) {

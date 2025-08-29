@@ -29,7 +29,7 @@ function createGame() {
 }
 async function copyLink() {
 	const link = `${window.location.origin}/${seed}`;
-	console.log(`Link copied : ${window.location.origin}/${seed}`);
+	console.log(`Link copied : ${window.location.origin}/${seed}/`);
 	if (navigator.clipboard && navigator.clipboard.writeText)
 		navigator.clipboard.writeText(link);
 	else {

@@ -601,4 +601,23 @@ h3 {
 	height: 50%;
 	background-color: black;
 }
+
+.stone {
+	background-color: rgb(108, 98, 98);
+	border: 2px black solid;
+	position: relative;
+	width: 20px;
+	height: 20px;
+}
+.stone::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	background-color: black;
+}
+
 </style>
