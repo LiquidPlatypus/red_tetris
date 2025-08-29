@@ -10,15 +10,19 @@ const route = useRoute()
 const seed = route.params.seed;
 const username = route.params.username;
 if (username.length > 12) {
-	// const confirmPseudo = window.confirm("Your username is too long (max 12 characters)\nIt will be trunced\nContinue ?");
-	const confirmPseudo = window.prompt("Entre ton pseudo :", "Joueur1");
-	if (confirmPseudo !== '') {
-		username = confirmPseudo;
+	const res = window.confirm('Your username is too long (12 char max)\nContinue ? (it be trunc)');
+	if (res) {
+		console.log('Lobby join !');
+		socket.emit('join-user', { seed, username });
+	} else {
+		router.push(`/${seed}`);
 	}
+	// router.push(`/${seed}`);
+	// window.alert('Your username is too long (12 char max)');
+} else {
+	console.log('Lobby join !');
+	socket.emit('join-user', { seed, username });
 }
-
-console.log('Lobby join !');
-socket.emit('join-user', { seed, username });
 
 socket.on('launch-game', () => {
 	router.push('/game');
