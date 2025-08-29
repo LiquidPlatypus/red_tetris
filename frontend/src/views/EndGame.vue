@@ -57,7 +57,7 @@ socket.on('rank', (data) => {
 });
 
 const winner = computed(() => rank.value.at(-1))
-const losers = computed(() => rank.value.slice(0, -1));
+const losers = computed(() => rank.value.slice(0, -1).reverse());
 </script>
 
 <template>
@@ -72,17 +72,19 @@ const losers = computed(() => rank.value.slice(0, -1));
 				</div>
 			</Window>
 
-			<div class="loser-div">
+			<div v-if="losers[0]" class="loser-div">
 				<TetrisText class="loser-text" text="LOSERS"></TetrisText>
 				<Window title="Losers" class="losers">
 					<div class="losers-box">
-						<table id="losers-tab">
-							<tbody>
+						<div class="tab-border">
+							<table id="losers-tab">
+								<tbody>
 								<tr v-for="(player) in losers" :key="username" class="losers-cell">
 									<td :title="username" class="losers-name">{{ player.username }}</td>
 								</tr>
-							</tbody>
-						</table>
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</Window>
 			</div>
@@ -178,6 +180,14 @@ main {
 	grid-area: 2 / 1;
 }
 
+.tab-border {
+	margin: 15px;
+	border-top: 2px solid #627A20;
+	border-left: 2px solid #627A20;
+	border-right: 2px solid #96BA34;
+	border-bottom: 2px solid #96BA34;
+}
+
 .losers-box {
 	background-color: #88ac28;
 	position: relative;
@@ -190,17 +200,19 @@ main {
 }
 
 #losers-tab {
+	margin: 4px;
 	border-collapse: collapse;
 }
 
 .losers-cell {
-	border: 2px solid #2c3e50;
+	border: 2px dotted #627A20;
 }
 
 .losers-name {
 	font-size: 1rem;
 	text-align: center;
 	padding: 0.1rem;
+	color: #214132;
 }
 
 .dot-typing {
