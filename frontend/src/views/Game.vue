@@ -439,6 +439,7 @@ main {
 	display: inline-block;
 	min-width: 30px;
 	text-align: center;
+	color: black;
 	padding: 2px 6px;
 	font-family: "MS Sans Serif", "Tahoma", sans-serif;
 	font-size: 14px;
