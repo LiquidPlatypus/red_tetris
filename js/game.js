@@ -149,9 +149,8 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 		permanentGrid = newGrid;
 		instance_game.addGrid(instance_player, permanentGrid);
 
-		if (linesCleared > lines)
+		for (; linesCleared > lines; lines++)
 			addLines(instance_game, instance_player);
-		lines = linesCleared;
 		socket.emit('getLines', lines);
 
 		activePiece = nextPiece;
