@@ -92,4 +92,28 @@ describe ("Window", () => {
 		expect(wrapper.find(".win95-content").html()).toContain("<p>test slot</p>");
 		expect(wrapper.find(".win95-content").text()).toBe("test slot");
 	});
+
+	it("should have a custom CSS class fix-overflow with a certain value", () => {
+		const wrapper = mount(Window, {
+			props: { customClass: "fix-overflow" }
+		});
+
+		expect(wrapper.find(".win95-window").classes()).toContain("fix-overflow");
+	});
+
+	it("should have a custom CSS class fix-overflow-endgame with a certain value", () => {
+		const wrapper = mount(Window, {
+			props: { customClass: "fix-overflow-endgame" }
+		});
+
+		expect(wrapper.find(".win95-window").classes()).toContain("fix-overflow-endgame");
+	});
+
+	it("should accept an empty customStyle", () => {
+		const wrapper = mount(Window, {
+			props: { customStyle: {} }
+		});
+
+		expect(wrapper.find(".win95-window").exists()).toBeTruthy();
+	});
 });
