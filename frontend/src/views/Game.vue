@@ -603,11 +603,12 @@ h3 {
 }
 
 .stone {
-	background-color: rgb(108, 98, 98);
+	background-color: orangered;
 	border: 2px black solid;
 	position: relative;
 	width: 20px;
 	height: 20px;
+	animation: glow 1s infinite;
 }
 .stone::before {
 	content: "";
@@ -618,6 +619,13 @@ h3 {
 	width: 50%;
 	height: 50%;
 	background-color: black;
+}
+
+@keyframes glow {
+	0% {background-color: orangered;}
+	25% {background-color: darkorange;}
+	50% {background-color: orangered;}
+	75% {background-color: darkorange;}
 }
 
 </style>
