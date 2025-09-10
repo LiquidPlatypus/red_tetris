@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import AppButton from "../AppButton.vue";
+import AppButton from "../../AppButton.vue";
 
 describe("AppButton", () => {
 	let wrapper;
