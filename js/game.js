@@ -200,7 +200,6 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 			lines = 0;
 			gameOver = false;
 			permanentGrid = Array(COLS).fill("empty");
-			instance_game.removeGrid(instance_player);
 		}
 	}
 

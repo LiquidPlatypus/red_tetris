@@ -40,6 +40,7 @@ function clearPlayer(instance_game, instance_player) {
         instance_game.removeGrid(instance_player);
         const player_list = instance_game.getPlayerList();
         io.to(`${instance_game.getSeed()}`).emit('server-log', `${instance_player.getUsername()} left the game !`);
+        instance_game.setReady(instance_game.getReady() - 1);
         if (player_list.size === 0)
             removeGame(instance_game);
         else if (instance_player.getHost() === true) {
@@ -47,7 +48,7 @@ function clearPlayer(instance_game, instance_player) {
             instance_game.removePlayer(element);
             const new_host = new Player(element.getUsername(), true, true, element.getId());
             instance_game.addPlayer(new_host);
-            io.to(element.getId()).emit('refresh-player'); // If new host defined, refresh his status on his side
+            io.to(element.getId()).emit('refresh-player');
         }
     }
 }
@@ -109,8 +110,8 @@ io.on('connection', (socket) => {
             }
             if (username.length > 12) username = username.substring(0, 12);
             random = createSeededRandom(instance_game.getInteger());
-            if (instance_player && instance_player.getUsername() === '')
-                instance_player = new Player(username, false, true, socket.id);
+            instance_player = new Player(username, instance_player.getHost(), true, instance_player.getId());
+            instance_game.setReady();
             io.to(`${seed}`).emit('server-log', `${instance_player.getUsername()} join the game !`);
             socket.join(`${seed}`);
             instance_game.addPlayer(instance_player);
@@ -197,7 +198,9 @@ io.on('connection', (socket) => {
 
     // when host click on launch game :
     socket.on('launch-game', (seed) => {
-        if (instance_player.getHost() === true) {
+        if (instance_player.getHost() === true && instance_game.getReady() == instance_game.getPlayerCount()) {
+            // console.log(`Host: ${instance_player.getHost()} // Ready: ${instance_game.getReady()}`);
+            instance_game.setReady(0);
             io.to(`${seed}`).emit('launch-game');
             console.log(`${seed} game launched now !`);
             instance_game.setCurrent(true);
@@ -224,10 +227,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('return-lobby', () => {
-        if (instance_game.getCurrent() === true)
+        if (instance_game.getCurrent() === true) {
+            instance_game.setReady(0);
             instance_game.setCurrent(false);
-        instance_game.setReady(0);
-        instance_game.changeInteger();
+            instance_game.changeInteger();
+        }
         instance_player = new Player(instance_player.getUsername(), instance_player.getHost(), true, instance_player.getId());
         instance_game.removeRank(instance_player);
         socket.emit('get-value', instance_game.getSeed(), instance_player.getUsername());
