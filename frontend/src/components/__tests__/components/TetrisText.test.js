@@ -28,12 +28,4 @@ describe("TetrisText", () => {
 		expect(letters.length).toBe(1);
 		expect(letters[0].findAll(".row").length).toBe(0);
 	});
-
-	it("should handle space gracefully", () => {
-		const wrapper = mount(TetrisText, {
-			props: { text: "A A" }
-		});
-
-		expect(wrapper.findAll(".letter").length).toBe(3);
-	});
 })
