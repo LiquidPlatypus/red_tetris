@@ -623,7 +623,7 @@ h3 {
 
 @keyframes glow {
 	0% {background-color: orangered;}
-	25% {background-color: darkorange;}
+	25% {background-color: red;}
 	50% {background-color: orangered;}
 	75% {background-color: darkorange;}
 }
