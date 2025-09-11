@@ -102,6 +102,29 @@ socket.on("flattenedNextPiece", (flatNextPiece) => {
 	flattenedNextPiece.value = flatNextPiece;
 });
 
+const colors = ["orangered", "red", "darkorange"];
+const animations = ["glow-0", "glow-1", "glow-2", "glow-3"];
+
+function getRandomStyle() {
+	const color = colors[Math.floor(Math.random() * colors.length)];
+	const anim = animations[Math.floor(Math.random() * animations.length)];
+	return {
+		backgroundColor: color,
+		animation: `${anim} ${0.8 + Math.random() * 1.5}s infinite linear`,
+	};
+}
+
+const stoneStyles = ref([]);
+
+socket.on("flattenedGrid", (flatGrid) => {
+	flattenedGrid.value = flatGrid;
+	stoneStyles.value = flatGrid.map((cell, i) =>
+	cell === "stone"
+		? getRandomStyle()
+		: {}
+	);
+});
+
 // ======== FONCTION DE COMMUNICATION AVEC LE SOCKET ========
 
 function handleKeyPress(e) {
@@ -254,7 +277,15 @@ onBeforeUnmount(() => {
 							:key="index"
 							:class="cell"
 							class="cell"
-						></div>
+							:style="stoneStyles[index]"
+						>
+							<template v-if="cell === 'stone'">
+								<div class="corner top-left"></div>
+								<div class="corner top-right"></div>
+								<div class="corner bottom-left"></div>
+								<div class="corner bottom-right"></div>
+							</template>
+						</div>
 					</div>
 
 					<div class="sidebar">
@@ -616,16 +647,55 @@ h3 {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	width: 50%;
-	height: 50%;
+	width: 20%;
+	height: 100%;
+	background-color: black;
+}
+.stone::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 100%;
+	height: 20%;
 	background-color: black;
 }
 
-@keyframes glow {
+.stone .corner {
+	position: absolute;
+	width: 6.5px;
+	height: 7px;
+}
+
+.stone .top-left { top: 0; left: 0; animation: pulse1 1s infinite; }
+.stone .top-right { top: 0; right: 0; animation: pulse2 1.3s infinite; }
+.stone .bottom-left { bottom: 0; left: 0; animation: pulse3 1.6s infinite; }
+.stone .bottom-right { bottom: 0; right: 0; animation: pulse4 1.9s infinite; }
+
+@keyframes pulse1 {
 	0% {background-color: orangered;}
 	25% {background-color: red;}
 	50% {background-color: orangered;}
 	75% {background-color: darkorange;}
+}
+@keyframes pulse2 {
+	0% {background-color: red;}
+	25% {background-color: darkorange;}
+	50% {background-color: red;}
+	75% {background-color: orangered;}
+}
+@keyframes pulse3 {
+	0% {background-color: darkorange;}
+	25% {background-color: orangered;}
+	50% {background-color: darkorange;}
+	75% {background-color: red;}
+}
+@keyframes pulse4 {
+	0% {background-color: red;}
+	25% {background-color: orangered;}
+	50% {background-color: darkorange;}
+	75% {background-color: red;}
 }
 
 </style>
