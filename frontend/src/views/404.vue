@@ -2,6 +2,7 @@
 import { useRouter } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import TetrisText from "@/components/TetrisText.vue";
+import Window from "@/components/Window.vue";
 
 const router = useRouter();
 function returnHome() {
@@ -12,7 +13,16 @@ function returnHome() {
 
 <template>
 	<main class="404">
-		<TetrisText class="perdu" text="HAHAH TU T'ES PERDU NULOS"></TetrisText>
+		<Window title="LOST" class="lost">
+			<div class="lost-background">
+				<TetrisText class="lost-text" text="HAHAH TU T'ES PERDU NULOS"></TetrisText>
+				<TetrisText class="emoji" text="/"></TetrisText>
+				<div class="loser">
+					<TetrisText text="LOSER"></TetrisText>
+					<TetrisText class="exclamation" text="!!"></TetrisText>
+				</div>
+			</div>
+		</Window>
 		<AppButton @click="returnHome">RETURN HOME</AppButton>
 		<ul>
 			<li>
@@ -44,11 +54,31 @@ li {
 	gap: 5px;
 }
 
-.perdu {
-	margin: 50px;
+.lost {
+	margin: 15px;
+}
+
+.lost-background {
+	margin: 10px;
 	padding: 20px;
-	background: yellow;
-	animation: blink 1s linear infinite;
+	background: #88ac28;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+}
+
+.emoji {
+	animation: blink 1s infinite;
+}
+
+.loser {
+	display: flex;
+	align-items: center;
+}
+
+.exclamation {
+	animation: blink 1s infinite;
 }
 
 @keyframes blink {
