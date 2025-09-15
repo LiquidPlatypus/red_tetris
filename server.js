@@ -265,7 +265,11 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`LOG : Listening on ${PORT}`);
-    console.log(`URL : http://${HOSTURL}:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+    server.listen(PORT, () => {
+        console.log(`LOG : Listening on ${PORT}`);
+        console.log(`URL : http://${HOSTURL}:${PORT}`);
+    });
+}
+
+export default app

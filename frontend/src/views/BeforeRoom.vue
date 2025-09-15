@@ -17,7 +17,7 @@ function joinLobby() {
 </script>
 
 <template>
-	<main>
+	<main class="before-room">
 		<div id="pseudo-request">
 			<input
 				id="sendUsername"
