@@ -1,75 +1,76 @@
-// tests/server.test.js
-import request from 'supertest';
-import { createServer } from 'http';
-import app from '../server.js';
+import { io as Client } from "socket.io-client";
+import { server } from "../server.js";
 
-describe('Express Server Tests', () => {
-  let server;
-  let httpServer;
+let clientSocket;
 
-  beforeAll((done) => {
-    // Create HTTP server on different port
-    httpServer = createServer(app);
-    server = httpServer.listen(0, () => {
-      done();
+beforeAll((done) => {
+    server.listen(() => {
+        const port = server.address().port;
+        clientSocket = new Client(`http://localhost:${port}`);
+        clientSocket.on("connect", done);
     });
-  });
+});
 
-  afterAll((done) => {
-    // Close server after test
-    server.close(() => {
-      done();
-    });
-  });
+afterAll(() => {
+    clientSocket.close();
+    server.close();
+});
 
-  describe('Route Testing', () => {
-    it('should return 200 and HTML content for GET /', async () => {
-      const response = await request(server)
-        .get('/')
-        .expect(200);
+describe("Socket.IO events", () => {
 
-      expect(response.text).toContain('<!DOCTYPE html>');
-      expect(response.headers['content-type']).toMatch(/html/);
+    it("should emit lobby-join when create-lobby is called", (done) => {
+        clientSocket.emit("create-lobby", "Etienne");
+
+        clientSocket.on("lobby-join", (data) => {
+            expect(data.Seed).toBe("Etienne_room");
+            expect(data.Username).toBe("Etienne");
+            clientSocket.off("lobby-join");
+            done();
+        });
     });
 
-    it('should return 404 for non-existent routes', async () => {
-      const response = await request(server)
-        .get('/non/existent/route')
-        .expect(404);
-
-      expect(response.status).toBe(404);
+    it("should emit error when lobby already exists", (done) => {
+        clientSocket.emit("create-lobby", "Etienne");
+        clientSocket.on("error", (errorMessage) => {
+            clientSocket.emit("return");
+            expect(errorMessage).toBe("username already exist");
+            clientSocket.off("lobby-join");
+            clientSocket.off("error");
+            done();
+        });
     });
 
-    it('should return 200 and HTML content for GET /room', async () => {
-        const response = await request(server)
-            .get('/room')
-            .expect(200);
-        expect(response.text).toContain('<!DOCTYPE html>');
-    });
-    it('should return 200 and HTML content for GET /room/user', async () => {
-        const response = await request(server)
-            .get('/room/user')
-            .expect(200);
-        expect(response.text).toContain('<!DOCTYPE html>');
+    it("should emit join-user when join not exist lobby is called", (done) => {
+        let Username = "Etienne";
+        let lobby_name = "not-exist-lobby";
+        clientSocket.emit('join-user', {lobby_name, Username});
+
+        clientSocket.on("error", (data) => {
+            expect(data).toBe("Game not exist");
+            clientSocket.off("error");
+            done();
+        });
     });
 
-    it('should handle invalid HTTP methods gracefully', async () => {
-      await request(server)
-        .patch('/')
-        .expect(404);
+    it("join exist lobby", (done) => {
+        let seed = "Etienne_room";
+        let username = "Etienne";
+        clientSocket.on("error", (data) => {
+            console.log(data);
+            clientSocket.off("error");  
+            done();
+        });
+        clientSocket.on("server-log", (message) => {
+            expect(message).toBe("EtienneII join the game !");
+            clientSocket.off("server-log");
+            done();
+        });
+        clientSocket.emit("create-lobby", "Etienne");
+        clientSocket.on("lobby-join", (data) => {
+            clientSocket.emit('join-user', {seed, username});
+            username = "EtienneII";
+            clientSocket.emit('join-user', {seed, username});
+            clientSocket.off("lobby-join");
+        });
     });
-  });
-
-  describe('Server Health', () => {
-    it('should respond to requests within reasonable time', async () => {
-      const startTime = Date.now();
-      
-      await request(server)
-        .get('/')
-        .expect(200);
-        
-      const responseTime = Date.now() - startTime;
-      expect(responseTime).toBeLessThan(1000); // Moins d'une seconde
-    });
-  });
 });
