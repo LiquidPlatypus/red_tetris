@@ -93,13 +93,11 @@ describe("App.vue", () => {
 	afterEach(() => {
 		// Nettoyer les mocks entre les tests.
 		vi.clearAllMocks();
-		if (socket._events) {
+		if (socket._events)
 			socket._events.clear();
-		}
 
-		if (wrapper) {
+		if (wrapper)
 			wrapper.unmount();
-		}
 	});
 
 	describe("Initialisation du composant", () => {
