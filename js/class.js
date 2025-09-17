@@ -207,9 +207,9 @@ export const addGame = (game) => {
 	console.log(`${game.getSeed()}: game added`);
 	games.set(game.getSeed(), game);
 };
-export const removeGame = (game) => {
-	console.log(`${game.getSeed()}: game removed`);
-	games.delete(game.getSeed());
+export const removeGame = (seed) => {
+	console.log(`${seed}: game removed`);
+	games.delete(seed);
 }
 
 export const getGame = (seed) => {

@@ -42,7 +42,7 @@ function clearPlayer(instance_game, instance_player) {
         io.to(`${instance_game.getSeed()}`).emit('server-log', `${instance_player.getUsername()} left the game !`);
         instance_game.setReady(instance_game.getReady() - 1);
         if (player_list.size === 0)
-            removeGame(instance_game);
+            removeGame(instance_game.getSeed());
         else if (instance_player.getHost() === true) {
             const element = player_list.values().next().value;
             instance_game.removePlayer(element);
@@ -250,6 +250,7 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('disconnect', () => {
+        if (process.env.NODE_ENV === "test") return;
         if (instance_game && instance_player) {
             clearPlayer(instance_game, instance_player);
             socket.leave(instance_game.getSeed());
