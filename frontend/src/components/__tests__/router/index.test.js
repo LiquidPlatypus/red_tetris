@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {mount} from "@vue/test-utils";
 import router from "@/router";
-import BeforeRoom from "@/views/BeforeRoom.vue";
-import Lobby from "@/views/Lobby.vue";
 
 describe("router", () => {
 	it("should have Home route", () => {
@@ -36,19 +33,27 @@ describe("router navigation", () => {
 });
 
 describe("route content", () => {
-	it.skip("should show BeforeRoom", async () => {
-		const wrapper = mount(BeforeRoom);
+	it("should load BeforeRoom component dynamically", async () => {
+		const beforeRoomRoute = router.getRoutes().find(r => r.name === "LobbyJoin");
+		expect(beforeRoomRoute).toBeTruthy();
 
-		expect(wrapper.find(".pseudo-input").exists()).toBe(true);
-	})
-
-	it.skip("should show Lobby", async () => {
-		const wrapper = mount(Lobby);
-
-		expect(wrapper.find("gameChoice").exists()).toBe(true);
+		const comp = await beforeRoomRoute.components.default();
+		expect(comp.default).toBeDefined();
 	});
 
-	it.skip("should show 404", async () => {
-		const wrapper = mount();
+	it("should load Lobby component dynamically", async () => {
+		const lobbyRoute = router.getRoutes().find(r => r.name === "Lobby");
+		expect(lobbyRoute).toBeTruthy();
+
+		const comp = await lobbyRoute.components.default();
+		expect(comp.default).toBeDefined();
+	});
+
+	it("should load 404 component dynamically", async () => {
+		const notFoundRoute = router.getRoutes().find(r => r.name === "UrlNotFound");
+		expect(notFoundRoute).toBeTruthy();
+
+		const comp = await notFoundRoute.components.default();
+		expect(comp.default).toBeDefined();
 	});
 });
