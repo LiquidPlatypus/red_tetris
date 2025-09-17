@@ -81,4 +81,48 @@ describe("askServer", () => {
 			expect(mockSocket.emmitedEvents[0].data).toEqual(complexMessage);
 		});
 	});
+
+	describe("Gestion des erreurs", () => {
+		it("should reject socket if null", async () => {
+			await expect(askServer("test", null))
+				.rejects
+				.toThrow("Socket not connected");
+		});
+
+		it("should reject if socket is undefined", async () => {
+			mockSocket.disconnect();
+
+			await expect(askServer("test", mockSocket))
+				.rejects
+				.toThrow("Socket not connected");
+		});
+
+		it("should reject if socket is not connected", async () => {
+			mockSocket.disconnect();
+
+			await expect(askServer("test", mockSocket))
+				.rejects
+				.toThrow("Socket not connected");
+		});
+
+		it("should reject with timeout if server doesn't respond", async () => {
+			const responsePromise = askServer("test", mockSocket);
+
+			vi.advanceTimersByTime(1000);
+
+			await expect(responsePromise)
+				.rejects
+				.toThrow("Server not response");
+		});
+
+		it("should reject even if response come after timeout", async () => {
+			const responsePromise = askServer("test", mockSocket);
+
+			vi.advanceTimersByTime(1000);
+
+			await expect(responsePromise)
+				.rejects
+				.toThrow("Server not response");
+		});
+	});
 });
