@@ -69,6 +69,9 @@ app.get('/:room', (req, res) => {
 app.get('/:room/:username', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
+app.get('*splat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+});
 
 io.on('connection', (socket) => {
     let instance_player = new Player('', false, false, socket.id);
@@ -186,6 +189,10 @@ io.on('connection', (socket) => {
         }
         if (signal === 'stop-game' && game) {
             game.stopGame();
+            return;
+        }
+        if (signal === 'get-host' && game) {
+            socket.emit('response', instance_player.getHost());
             return;
         }
     });

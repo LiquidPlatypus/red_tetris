@@ -8,20 +8,23 @@ let port;
 const ROWS = 20;
 const COLS = 10;
 
-function MockGNT() {
-    const bag = [];
-    let random = createSeededRandom(412541254125);
-    if (bag.length === 0)
-        refillBag(bag, random);
-    const index = bag.shift();
-    const tetromino = TETROMINOS[index];
-    return ({
-        shape: tetromino.getShape().map(row =>
-            row.map(cell => (cell ? tetromino.getColor() : "empty"))),
-        x: tetromino.getX(),
-        y: tetromino.getY(),
-        color: tetromino.getColor(),
-    });
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+async function startCounter(nbr) {
+	let showCounter = true;
+    let counter;
+
+	for (let i = nbr; i >= 1; i--) {
+		counter = i;
+		await sleep(1000);
+	}
+
+	counter = "Game !";
+
+	setTimeout(() => {
+		showCounter = false;
+	}, 2000);
 }
 
 let testcount = 1;
@@ -159,9 +162,6 @@ describe("Socket.IO events", () => {
             
             clientSocket.on("server-log", (message) => {
                 if (message === "Etienne2 join the game !") {
-                    let activePiece = null;
-                    let nextPiece = MockGNT();
-                    let permanentGrid = Array.from({ length: ROWS }, () => Array(COLS).fill("empty"));
                     clientSocket.emit("launch-game", seed);
                     clientSocket.on("launch-game", () => {
                         clientSocket.emit("ask-server", "init-grid");
@@ -208,4 +208,62 @@ describe("Socket.IO events", () => {
 
         });
     });
+
+    it("Test input: Space Bar", (done) => {
+        let username = "Etienne";
+        let seed = "Etienne_room";
+        let flatGridRes;
+        let flatNextPieceRes;
+        clientSocket.emit("create-lobby", username);
+        clientSocket.on("lobby-join", (data) => {
+            clientSocket.emit("join-user", {seed, username});
+            clientSocket.emit("launch-game", seed);
+            clientSocket.on("launch-game", () => {
+                clientSocket.emit("ask-server", "init-grid");
+                clientSocket.on("flattenedGrid", (flatGrid) => {
+                    flatGridRes = flatGrid;
+                });
+                clientSocket.emit("ask-server", "init-piece");
+                clientSocket.on("flattenedNextPiece", (flatNextPiece) => {
+                    flatNextPieceRes = flatNextPiece;
+                });
+                clientSocket.emit("ask-server", "start-game");
+                clientSocket.on("launch", (startAt) => {
+                    const delay = startAt - Date.now();
+                    startCounter(parseInt(delay / 1000) + 1);
+                    clientSocket.on("getGameOver", (info) => {
+                        if (info) {
+                            done();
+                        }
+                    });
+                    setTimeout(() => {
+                        clientSocket.emit("launch");
+                        for(let i = 20; i !== 0; i--)
+                            clientSocket.emit("input", "Space");
+                    }, delay);
+                });
+            });
+        });
+    });
+
+    // it("Check get host", (done) => {
+    //     let username = "Etienne";
+    //     let seed = "Etienne_room";
+    //     clientSocket.emit("ask-server", "get-host");
+    //     console.log("HERE");
+    //     clientSocket.on("response", (data) => {
+    //         expect(data).toBe(false);
+    //         clientSocket.off("reponse");
+    //         clientSocket.emit("create-lobby", username);
+    //         clientSocket.on("lobby-join", (data) => {
+    //             clientSocket.emit("join-user", {seed, username});
+    //             clientSocket.emit("ask-server", "get-host");
+    //             clientSocket.on("response", (data) => {
+    //                 expect(data).toBe(true);
+    //                 clientSocket.off("reponse");
+    //                 done();
+    //             });
+    //         });
+    //     });
+    // });
 });
