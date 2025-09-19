@@ -1,11 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import AppButton from "../AppButton.vue";
+import AppButton from "../../AppButton.vue";
 
 describe("AppButton", () => {
-	it("should render with default props", () => {
-		const wrapper = mount(AppButton);
+	let wrapper;
 
+	beforeEach(() => {
+		wrapper = mount(AppButton)
+	})
+
+	it("should render with default props", () => {
 		expect(wrapper.find("button").exists()).toBe(true);
 		expect(wrapper.find("button").attributes("type")).toBe("button");
 		expect(wrapper.find("button").classes()).toContain("app-button");
@@ -54,8 +58,6 @@ describe("AppButton", () => {
 	});
 
 	it("should emit click event when clicked", async () => {
-		const wrapper = mount(AppButton);
-
 		await wrapper.find("button").trigger("click");
 
 		expect(wrapper.emitted("click")).toBeTruthy();
@@ -63,20 +65,16 @@ describe("AppButton", () => {
 	});
 
 	it("should have correct CSS classes", () => {
-		const wrapper = mount(AppButton);
 		const button = wrapper.find("button");
 
 		expect(button.classes()).toContain("app-button");
 	});
 
 	it("should render empty when no label or slot provided", () => {
-		const wrapper = mount(AppButton);
-
 		expect(wrapper.text()).toBe("");
 	});
 
 	it("should be focusable", async () => {
-		const wrapper = mount(AppButton);
 		const button = wrapper.find("button");
 
 		await button.trigger("focus");
@@ -85,7 +83,6 @@ describe("AppButton", () => {
 	});
 
 	it("should support keyboard events", async () => {
-		const wrapper = mount(AppButton);
 		const button = wrapper.find("button");
 
 		await button.trigger("keydown.enter");

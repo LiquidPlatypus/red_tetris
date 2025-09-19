@@ -8,7 +8,7 @@ import { askServer } from "@/utils";
 const router = useRouter()
 const route = useRoute()
 const seed = route.params.seed;
-const username = route.params.username;
+let username = route.params.username;
 if (username.length > 12) {
 	const res = window.confirm('Your username is too long (12 char max)\nContinue ? (it be trunc)');
 	if (res) {

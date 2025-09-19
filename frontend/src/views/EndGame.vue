@@ -63,14 +63,27 @@ const losers = computed(() => rank.value.slice(0, -1).reverse());
 <template>
 	<main class="endgame">
 		<div v-if="allPlayersFinished" class="end-screen">
-			<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
-				<div class="winner-box">
-					<div class=winner-text>
-						<TetrisText :text="winner?.username"></TetrisText>
-						<TetrisText text="!! WINNER !!"></TetrisText>
+			<div v-if="losers[0]">
+				<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
+					<div class="winner-box">
+						<div class=winner-text>
+							<TetrisText :text="winner?.username"></TetrisText>
+							<TetrisText text="!! WINNER !!"></TetrisText>
+						</div>
 					</div>
-				</div>
-			</Window>
+				</Window>
+			</div>
+
+			<div v-if="!losers[0]">
+				<Window title="Winner" variant="results" class="winner" customClass="fix-overflow-endgame">
+					<div class="winner-box">
+						<div class=winner-text>
+							<TetrisText :text="winner?.username"></TetrisText>
+							<TetrisText text="GAME OVER"></TetrisText>
+						</div>
+					</div>
+				</Window>
+			</div>
 
 			<div v-if="losers[0]" class="loser-div">
 				<TetrisText class="loser-text" text="LOSERS"></TetrisText>
