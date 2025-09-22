@@ -1,9 +1,10 @@
 <script setup>
-import { onBeforeUnmount, onMounted } from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import AppButton from "@/components/AppButton.vue";
 import socket from '@/socket';
 import { askServer } from "@/utils";
+import Window from "@/components/Window.vue";
 
 const router = useRouter()
 const route = useRoute()
@@ -26,6 +27,25 @@ if (username.length > 12) {
 
 socket.on('launch-game', () => {
 	router.push('/game');
+});
+
+const isHost = ref(false);
+askServer("get-host", socket).then((res) => {
+	isHost.value = res;
+});
+
+const playerList = ref([]);
+socket.emit("ask-server", "get-player-list");
+socket.on("get-player-list", (res) => {
+	playerList.value = res;
+});
+
+const players = computed(() => {
+	return (playerList.value || []).map((p) => ({
+		username: p.username,
+		status: p.status ?? "unknown",
+		isHost: isHost.value && p.username === username
+	}));
 });
 
 function createGame() {
@@ -78,8 +98,18 @@ onBeforeUnmount(() => {
 
 <template>
 	<main class="lobby">
+		<Window title="Player list" customClass="fix-overflow-endgame" class="players-list" v-if="players[1]">
+			<div class="players-list-content">
+				<ul>
+					<li v-for="(player, index) in players" :key="index" :class="{ host: player.isHost }">
+						{{ player.username }}
+					</li>
+				</ul>
+			</div>
+		</Window>
 		<div class="gameChoice">
-			<AppButton @click="createGame">LAUNCH GAME</AppButton>
+			<AppButton @click="createGame" v-if="isHost">LAUNCH GAME</AppButton>
+			<p v-if="!isHost">Only the host can launch the game</p>
 			<AppButton @click="copyLink">COPY LINK</AppButton>
 		</div>
 		<div id="url"></div>
@@ -87,8 +117,58 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+main {
+	font-family: Pixel, sans-serif;
+	display: flex;
+	flex-direction: row;
+	min-height: 100vh;
+	width: 100%;
+	padding: 1rem;
+}
+
+ul {
+	list-style: square;
+}
+
+li {
+	color: #214132;
+}
+li.host {
+	color: #0000e2;
+	font-weight: bold;
+}
+
+p {
+	font-size: 20px;
+}
+
+.players-list {
+	flex-shrink: 0;
+	min-width: 200px;
+	position: absolute;
+	left: 5%;
+	top: 50%;
+	transform: translate(0, -50%);
+}
+
+.players-list-content {
+	background-color: #88ac28;
+	margin: 10px;
+	border-top: 2px solid black;
+	border-left: 2px solid black;
+}
+
 .gameChoice {
-	display: grid;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	max-width: 175px;
 	gap: 1vh;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
 }
 </style>

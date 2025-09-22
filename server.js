@@ -160,7 +160,7 @@ io.on('connection', (socket) => {
             else
                 socket.emit('response', true);
         }
-        if (signal === `/${instance_game.getSeed()}/${instance_player.getUsername()}`) {
+        if (instance_game && instance_player && signal === `/${instance_game.getSeed()}/${instance_player.getUsername()}`) {
             socket.emit('response', true);
             return;
         }
@@ -192,9 +192,22 @@ io.on('connection', (socket) => {
             return;
         }
         if (signal === 'get-host' && game) {
-            socket.emit('response', instance_player.getHost());
+            socket.emit('response:get-host', instance_player.getHost());
             return;
         }
+	    if (signal === 'get-player-list' && instance_game && instance_game.getSeed() !== "") {
+		    const playerList = instance_game.getPlayerList();
+		    const serializerPlayerList = Array.from(playerList.entries())
+			    .filter(([playerId, player]) => instance_game.getPlayer(playerId))
+			    .map(([playerId, player]) => {
+				    return {
+					    player,
+					    username: player.getUsername(),
+					    status: player.getStatus(),
+				    };
+			    });
+		    socket.emit('get-player-list', serializerPlayerList);
+	    }
     });
 
     socket.on('launch', () => {

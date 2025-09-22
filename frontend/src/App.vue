@@ -20,6 +20,7 @@ socket.on('refresh-player', () => {
 
 socket.on('server-log', (log) => {
 	console.log(`[SERVER LOG] ${log}`);
+	socket.emit("ask-server", "get-player-list");
 });
 
 socket.on('error', (message) => {
