@@ -22,6 +22,8 @@ defineProps({
 	height: 4vh;
 	cursor: pointer;
 	font-family: "ModernTetris", sans-serif;
+	min-height: 50px;
+	min-width: 175px;
 }
 
 .app-button:hover {
