@@ -45,8 +45,8 @@ describe("askServer", () => {
 
 	describe("Success case", () => {
 		it("should send the message and return the server response", async () => {
-			const message = "Hello Server";
-			const expectedResponse = "Hello Client";
+			const message = "Hello Server:type";
+			const expectedResponse = "Hello Client:type";
 
 			const responsePromise = askServer(message, mockSocket);
 
