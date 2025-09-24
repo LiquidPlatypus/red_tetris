@@ -120,7 +120,7 @@ io.on('connection', (socket) => {
             instance_game.addPlayer(instance_player);
             game = gameLogic(socket, instance_player, instance_game, random);
         } else {
-            socket.emit('error', 'La partie est en cours chef !')
+            socket.emit('error', 'Game in progress !')
         }
     });
 
@@ -180,18 +180,18 @@ io.on('connection', (socket) => {
             return;
         }
         if (signal === 'init-grid' && game) {
-            socket.emit(`flattenedGrid:${signal}`, game.getVisualGrid().flat());
+            socket.emit(`flattenedGrid`, game.getVisualGrid().flat());
             return;
         }
         if (signal === 'init-piece' && game) {
-            socket.emit(`flattenedNextPiece:${signal}`, game.getNextGrid().flat());
+            socket.emit(`flattenedNextPiece`, game.getNextGrid().flat());
             return;
         }
         if (signal === 'stop-game' && game) {
             game.stopGame();
             return;
         }
-        if (signal === 'get-host' && game) {
+        if (signal === 'get-host') {
             socket.emit('response:get-host', instance_player.getHost());
             return;
         }

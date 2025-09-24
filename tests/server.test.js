@@ -5,9 +5,6 @@ import { calculateNextPieceGrid, calculateVisualGrid } from "../js/logic.js";
 
 let clientSocket;
 let port;
-const ROWS = 20;
-const COLS = 10;
-
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -250,17 +247,17 @@ describe("Socket.IO events", () => {
     //     let username = "Etienne";
     //     let seed = "Etienne_room";
     //     clientSocket.emit("ask-server", "get-host");
-    //     console.log("HERE");
-    //     clientSocket.on("response", (data) => {
+    //     clientSocket.on("response:get-host", (data) => {
     //         expect(data).toBe(false);
-    //         clientSocket.off("reponse");
+    //         clientSocket.off("reponse:get-host");
     //         clientSocket.emit("create-lobby", username);
     //         clientSocket.on("lobby-join", (data) => {
     //             clientSocket.emit("join-user", {seed, username});
     //             clientSocket.emit("ask-server", "get-host");
-    //             clientSocket.on("response", (data) => {
+    //             clientSocket.on("response:get-host", (data) => {
+    //                 console.log("HERE");
     //                 expect(data).toBe(true);
-    //                 clientSocket.off("reponse");
+    //                 clientSocket.off("reponse:get-host");
     //                 done();
     //             });
     //         });
