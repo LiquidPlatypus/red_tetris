@@ -156,16 +156,16 @@ io.on('connection', (socket) => {
     socket.on('ask-server', (signal) => {
         if (signal === 'game-exist') {
             if (instance_game && instance_game.getSeed() === '')
-                socket.emit('response', false);
+                socket.emit(`response:${signal}`, false);
             else
-                socket.emit('response', true);
+                socket.emit(`response:${signal}`, true);
         }
         if (instance_game && instance_player && signal === `/${instance_game.getSeed()}/${instance_player.getUsername()}`) {
-            socket.emit('response', true);
+            socket.emit(`response:${signal}`, true);
             return;
         }
         if (signal === 'get-username') {
-            socket.emit('response', instance_player.getUsername());
+            socket.emit(`response:${signal}`, instance_player.getUsername());
             return;
         }
         if (signal === 'start-game') {
@@ -173,18 +173,18 @@ io.on('connection', (socket) => {
             if (instance_game.getReady() === instance_game.getPlayerCount() && instance_game.getSeed() !== '') {
                 const delay = Date.now() + 3000;
                 io.to(`${instance_game.getSeed()}`).emit('launch', delay);
-                socket.emit('response', true);
+                socket.emit(`response:${signal}`, true);
                 return;
             }
-            socket.emit('response', false);
+            socket.emit(`response:${signal}`, false);
             return;
         }
         if (signal === 'init-grid' && game) {
-            socket.emit('flattenedGrid', game.getVisualGrid().flat());
+            socket.emit(`flattenedGrid:${signal}`, game.getVisualGrid().flat());
             return;
         }
         if (signal === 'init-piece' && game) {
-            socket.emit('flattenedNextPiece', game.getNextGrid().flat());
+            socket.emit(`flattenedNextPiece:${signal}`, game.getNextGrid().flat());
             return;
         }
         if (signal === 'stop-game' && game) {
