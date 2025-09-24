@@ -110,6 +110,7 @@ onBeforeUnmount(() => {
 					</li>
 				</ul>
 			</div>
+			<p v-if="isHost" class="warning">You Can only launch the game if all players are in the Lobby.</p>
 		</Window>
 		<div class="gameChoice">
 			<AppButton @click="createGame" v-if="isHost">LAUNCH GAME</AppButton>
@@ -149,6 +150,8 @@ p {
 .players-list {
 	flex-shrink: 0;
 	min-width: 200px;
+	max-width: 250px;
+	padding: 10px;
 	position: absolute;
 	left: 5%;
 	top: 50%;
@@ -157,9 +160,13 @@ p {
 
 .players-list-content {
 	background-color: #88ac28;
-	margin: 10px;
 	border-top: 2px solid black;
 	border-left: 2px solid black;
+}
+
+.warning {
+	font-size: 15px;
+	text-align: center;
 }
 
 .gameChoice {
