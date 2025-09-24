@@ -50,7 +50,7 @@ describe("askServer", () => {
 
 			const responsePromise = askServer(message, mockSocket);
 
-			mockSocket.simulateServerResponse("response", expectedResponse);
+			mockSocket.simulateServerResponse(`response:${message}`, expectedResponse);
 
 			const actualResponse = await responsePromise;
 
@@ -73,7 +73,7 @@ describe("askServer", () => {
 			};
 
 			const responsePromise = askServer(complexMessage, mockSocket);
-			mockSocket.simulateServerResponse("response", complexResponse);
+			mockSocket.simulateServerResponse(`response:${complexMessage}`, complexResponse);
 
 			const result = await responsePromise;
 
