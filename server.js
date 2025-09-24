@@ -283,6 +283,7 @@ io.on('connection', (socket) => {
         if (instance_game) {
             const new_player = instance_game.getPlayer(instance_player.getId());
             instance_player = new_player;
+            socket.emit("response:get-host", instance_player.getHost());
         }
     });
 });

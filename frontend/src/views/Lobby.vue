@@ -30,7 +30,11 @@ socket.on('launch-game', () => {
 });
 
 const isHost = ref(false);
-askServer("get-host", socket).then((res) => {
+// askServer("get-host", socket).then((res) => {
+// 	isHost.value = res;
+// });
+socket.emit("ask-server", "get-host");
+socket.on("response:get-host", (res) => {
 	isHost.value = res;
 });
 
@@ -44,7 +48,7 @@ const players = computed(() => {
 	return (playerList.value || []).map((p) => ({
 		username: p.username,
 		status: p.status ?? "unknown",
-		isHost: p.host === true, // 👈 plus besoin du isHost global
+		isHost: p.host === true,
 	}));
 });
 
