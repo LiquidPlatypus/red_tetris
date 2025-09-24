@@ -204,6 +204,7 @@ io.on('connection', (socket) => {
 					    player,
 					    username: player.getUsername(),
 					    status: player.getStatus(),
+					    host: player.getHost(),
 				    };
 			    });
 		    socket.emit('get-player-list', serializerPlayerList);

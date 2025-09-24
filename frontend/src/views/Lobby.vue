@@ -44,7 +44,7 @@ const players = computed(() => {
 	return (playerList.value || []).map((p) => ({
 		username: p.username,
 		status: p.status ?? "unknown",
-		isHost: isHost.value && p.username === username
+		isHost: p.host === true, // 👈 plus besoin du isHost global
 	}));
 });
 
