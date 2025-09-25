@@ -18,8 +18,6 @@ if (username.length > 12) {
 	} else {
 		router.push(`/${seed}`);
 	}
-	// router.push(`/${seed}`);
-	// window.alert('Your username is too long (12 char max)');
 } else {
 	console.log('Lobby join !');
 	socket.emit('join-user', { seed, username });
@@ -30,9 +28,6 @@ socket.on('launch-game', () => {
 });
 
 const isHost = ref(false);
-// askServer("get-host", socket).then((res) => {
-// 	isHost.value = res;
-// });
 socket.emit("ask-server", "get-host");
 socket.on("response:get-host", (res) => {
 	isHost.value = res;

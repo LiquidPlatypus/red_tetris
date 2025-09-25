@@ -11,6 +11,10 @@ const seed = route.params.seed;
 function joinLobby() {
 	if (pseudo.value.trim() === '')
 		return;
+	if (pseudo.value.includes('/')) {
+		alert("Forbidden char in username");
+		return;
+	}
 	router.push(`/${seed}/${pseudo.value}`);
 }
 

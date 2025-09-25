@@ -86,6 +86,10 @@ io.on('connection', (socket) => {
             instance_game = new Game(seed);
             addGame(instance_game);
             if (username.length > 12) username = username.substring(0, 12);
+            if (username.includes('/') || username.includes('<') || username.includes('>') || username.includes('_') || username.includes(' ')) {
+                socket.emit("error", "Forbidden char in username");
+                return;
+            }
             instance_player = new Player(username, true, true, instance_player.getId());
             console.log(`${seed} created !`);
             socket.emit('lobby-join', {
@@ -100,14 +104,19 @@ io.on('connection', (socket) => {
     // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
         instance_game = getGame(seed);
+        console.log("caca");
         if (!instance_game)
             socket.emit('error', 'Game not exist');
+        else if (username.includes('/') || username.includes('<') || username.includes('>') || username.includes('_') || username.includes(' ')) {
+            socket.emit("error", "Forbidden char in username");
+            return;
+        }
         else if (!instance_game.getPlayer(instance_player.getId()) && instance_game.getPlayerCount() === 5)
             socket.emit('error', 'Lobby full');
         else if (instance_game.getCurrent() === false) {
             for (const playerId of instance_game.getPlayerList().keys()) {
                 if (instance_game.getPlayer(playerId).getUsername() === username && playerId !== instance_player.getId())  {
-                    socket.emit('go-to', `/${instance_game.getSeed()}`, 'This username already taked');
+                    socket.emit('go-to', `/${instance_game.getSeed()}`, 'This username is already taken');
                     return;
                 }
             }
@@ -220,7 +229,6 @@ io.on('connection', (socket) => {
     // when host click on launch game :
     socket.on('launch-game', (seed) => {
         if (instance_player.getHost() === true && instance_game.getReady() == instance_game.getPlayerCount()) {
-            // console.log(`Host: ${instance_player.getHost()} // Ready: ${instance_game.getReady()}`);
             instance_game.setReady(0);
             io.to(`${seed}`).emit('launch-game');
             console.log(`${seed} game launched now !`);
