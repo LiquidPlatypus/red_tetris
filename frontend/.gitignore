@@ -16,8 +16,6 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
-socket.js
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,5 +27,3 @@ socket.js
 *.sw?
 
 *.tsbuildinfo
-
-/src/socket.js

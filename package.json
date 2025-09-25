@@ -1,4 +1,4 @@
-echo '{
+{
   "name": "red_tetris",
   "version": "1.0.0",
   "description": "",
@@ -25,4 +25,4 @@ echo '{
     "socket.io-client": "^4.8.1",
     "supertest": "^7.1.4"
   }
-}' > package.json
+}
