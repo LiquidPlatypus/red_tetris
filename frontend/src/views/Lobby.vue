@@ -55,14 +55,20 @@ const players = computed(() => {
 function createGame() {
 	socket.emit('launch-game', seed);
 }
+
 async function copyLink() {
 	const link = `${window.location.origin}/${seed}`;
-	console.log(`Link copied : ${window.location.origin}/${seed}/`);
-	if (navigator.clipboard && navigator.clipboard.writeText)
-		navigator.clipboard.writeText(link);
-	else {
-		const element = document.getElementById('url');
-		element.innerHTML = link;
+	console.log(`Link copied : ${link}/`);
+
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		try {
+			await navigator.clipboard.writeText(link);
+			console.log("Copied to clipboard!");
+		} catch (err) {
+			console.error("Clipboard write failed", err);
+		}
+	} else {
+		window.prompt("Copy this link:", link);
 	}
 }
 
