@@ -109,7 +109,7 @@ const losers = computed(() => rank.value.slice(0, -1).reverse());
 
 		<div v-else>
 			<Window title="Results" variant="results" id="game-over">
-				<h2>
+				<h2 class="waiting-text">
 					WAITING FOR OTHER PLAYERS TO FINISH
 					<span class="dot-typing"></span>
 				</h2>
@@ -226,6 +226,10 @@ main {
 	text-align: center;
 	padding: 0.1rem;
 	color: #214132;
+}
+
+.waiting-text {
+	color: lightgray;
 }
 
 .dot-typing {
