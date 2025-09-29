@@ -104,15 +104,19 @@ io.on('connection', (socket) => {
     // if client join with /room_name/username :
     socket.on('join-user', ({ seed, username }) => {
         instance_game = getGame(seed);
-        console.log("caca");
-        if (!instance_game)
+        if (!instance_game) {
+            instance_game = null;
             socket.emit('error', 'Game not exist');
+        }
         else if (username.includes('/') || username.includes('<') || username.includes('>') || username.includes('_') || username.includes(' ')) {
+            instance_game = null;
             socket.emit("error", "Forbidden char in username");
             return;
         }
-        else if (!instance_game.getPlayer(instance_player.getId()) && instance_game.getPlayerCount() === 5)
+        else if (!instance_game.getPlayer(instance_player.getId()) && instance_game.getPlayerCount() === 5) {
+            instance_game = null;
             socket.emit('error', 'Lobby full');
+        }
         else if (instance_game.getCurrent() === false) {
             for (const playerId of instance_game.getPlayerList().keys()) {
                 if (instance_game.getPlayer(playerId).getUsername() === username && playerId !== instance_player.getId())  {
@@ -129,6 +133,7 @@ io.on('connection', (socket) => {
             instance_game.addPlayer(instance_player);
             game = gameLogic(socket, instance_player, instance_game, random);
         } else {
+            instance_game = null;
             socket.emit('error', 'Game in progress !')
         }
     });
