@@ -1,5 +1,7 @@
 # red_tetris
 
+Premier projet post tronc commun réalisé, permettant de jouer à Tetris en multijoueur en ligne.
+
 # install if new repo :
 npm init -y
 npm install express socket.io
