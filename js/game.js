@@ -153,6 +153,7 @@ export function gameLogic(socket, instance_player, instance_game, random) {
 			for (; linesCleared - 1 > lines; lines++)
 				addLines(instance_game, instance_player);
 		}
+		lines = linesCleared;
 		socket.emit('getLines', lines);
 
 		activePiece = nextPiece;
